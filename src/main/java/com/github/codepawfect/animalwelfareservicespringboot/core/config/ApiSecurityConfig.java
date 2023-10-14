@@ -12,7 +12,7 @@ public class ApiSecurityConfig {
   @Bean
   SecurityWebFilterChain springWebFilterChain(ServerHttpSecurity http) {
     http
-        .authorizeExchange((authorize) -> authorize
+        .authorizeExchange(authorize -> authorize
             .pathMatchers(HttpMethod.GET,"/dog/*").permitAll()
             .pathMatchers(HttpMethod.POST,"/dog/*").hasRole("ADMIN")
             .pathMatchers(HttpMethod.POST,"/user/login").permitAll()
