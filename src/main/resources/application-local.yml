@@ -1,0 +1,11 @@
+spring:
+  datasource:
+    url: postgresql://localhost:5432/animal_welfare
+    username: postgresql
+    password: postgresql
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: none
+  flyway:
+    enabled: true
