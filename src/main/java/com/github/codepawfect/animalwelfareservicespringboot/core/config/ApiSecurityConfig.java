@@ -14,7 +14,7 @@ public class ApiSecurityConfig {
     http
         .authorizeExchange(authorize -> authorize
             .pathMatchers(HttpMethod.GET,"/dog/*").permitAll()
-            .pathMatchers(HttpMethod.POST,"/dog/*").hasRole("ADMIN")
+            .pathMatchers("/dog/*").hasRole("ADMIN")
             .pathMatchers(HttpMethod.POST,"/user/login").permitAll()
             .anyExchange().denyAll()
         );
