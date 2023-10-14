@@ -12,7 +12,7 @@ import org.springframework.data.annotation.Version;
 public class BaseEntity {
 
   @Version
-  private String version;
+  private Integer version;
 
   @CreatedDate
   private LocalDateTime createdAt;
