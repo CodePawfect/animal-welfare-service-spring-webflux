@@ -1,3 +1,11 @@
+spring:
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/animal_welfare
+    username: postgresql
+    password: postgresql
+  flyway:
+    enabled: true
+
 springdoc:
   swagger-ui:
     path: /swagger-ui.html

@@ -32,12 +32,11 @@ class DogServiceTest {
   void getDogs() {
     // Arrange
     var dog = new Dog(UUID.randomUUID(), "Buddy", "Labrador", 5);
-    var dogEntityFlux = Flux.fromIterable(
-        List.of(new DogEntity(UUID.randomUUID(), "Buddy", "Labrador", 5)));
-    var dogFlux = Flux.fromIterable(List.of(dog));
+    var dogEntity = new DogEntity(UUID.randomUUID(), "Buddy", "Labrador", 5);
+    var dogEntityFlux = Flux.fromIterable(List.of(dogEntity));
 
     when(dogRepository.findAll()).thenReturn(dogEntityFlux);
-    when(dogMapper.map(dogEntityFlux)).thenReturn(dogFlux);
+    when(dogMapper.mapEntity(dogEntity)).thenReturn(dog);
 
     // Act & Assert
     StepVerifier.create(dogService.getDogs())
