@@ -15,9 +15,9 @@ public class ApiSecurityConfiguration {
   SecurityWebFilterChain springWebFilterChain(ServerHttpSecurity http) {
     http
         .authorizeExchange(authorize -> authorize
-            .pathMatchers(HttpMethod.GET,"*/dog**").permitAll()
-            .pathMatchers("*/dog**").hasRole("ADMIN")
-            .pathMatchers(HttpMethod.POST,"/user/login").permitAll()
+            .pathMatchers(HttpMethod.GET,"/v1/dogs").permitAll()
+            .pathMatchers(HttpMethod.GET,"/v1/dog/**").permitAll()
+            .pathMatchers("/v1/dog/**").hasRole("ADMIN")
             .anyExchange().denyAll()
         );
     return http.build();

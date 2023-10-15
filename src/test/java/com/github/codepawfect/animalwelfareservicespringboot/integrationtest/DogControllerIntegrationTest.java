@@ -1,7 +1,9 @@
 package com.github.codepawfect.animalwelfareservicespringboot.integrationtest;
 
+import java.util.UUID;
 import com.github.codepawfect.animalwelfareservicespringboot.data.TestData;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.DogRepository;
+import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.model.DogEntity;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -12,10 +14,15 @@ class DogControllerIntegrationTest extends AbstractIntegrationTest {
   @Autowired
   private DogRepository dogRepository;
 
+  private DogEntity dogEntity;
+
+
   @BeforeEach
   void init() {
     super.init();
-    dogRepository.save(TestData.DOG_ENTITY_BUDDY).block();
+    UUID randomDogId = UUID.randomUUID();
+    this.dogEntity = TestData.DOG_ENTITY_BUDDY.toBuilder().id(randomDogId).build();
+    dogRepository.save(dogEntity).block();
   }
 
   @AfterEach
@@ -30,6 +37,16 @@ class DogControllerIntegrationTest extends AbstractIntegrationTest {
         .then()
         .statusCode(200)
         .log().ifValidationFails()
-        .body("dogResources[0].name", org.hamcrest.Matchers.equalTo("Buddy"));
+        .body("dogResources[0].id", org.hamcrest.Matchers.equalTo(dogEntity.getId().toString()));
+  }
+
+  @Test
+  void getDog_returns_200_with_expected_dog() {
+    when()
+        .get("/v1/dog/" + dogEntity.getId())
+        .then()
+        .statusCode(200)
+        .log().ifValidationFails()
+        .body("id", org.hamcrest.Matchers.equalTo(dogEntity.getId().toString()));
   }
 }
