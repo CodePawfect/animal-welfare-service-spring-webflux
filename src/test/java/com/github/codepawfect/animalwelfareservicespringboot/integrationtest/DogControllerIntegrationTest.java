@@ -8,6 +8,7 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import static io.restassured.RestAssured.when;
+import static org.hamcrest.Matchers.equalTo;
 
 class DogControllerIntegrationTest extends AbstractIntegrationTest {
 
@@ -37,7 +38,7 @@ class DogControllerIntegrationTest extends AbstractIntegrationTest {
         .then()
         .statusCode(200)
         .log().ifValidationFails()
-        .body("dogResources[0].id", org.hamcrest.Matchers.equalTo(dogEntity.getId().toString()));
+        .body("dogResources[0].id", equalTo(dogEntity.getId().toString()));
   }
 
   @Test
@@ -47,6 +48,6 @@ class DogControllerIntegrationTest extends AbstractIntegrationTest {
         .then()
         .statusCode(200)
         .log().ifValidationFails()
-        .body("id", org.hamcrest.Matchers.equalTo(dogEntity.getId().toString()));
+        .body("id", equalTo(dogEntity.getId().toString()));
   }
 }
