@@ -13,8 +13,7 @@ import org.springframework.data.relational.core.mapping.Table;
 @AllArgsConstructor
 public class DogEntity extends BaseEntity {
 
-  @Id
-  private UUID id;
+  @Id private UUID id;
   private String name;
   private String breed;
   private Integer age;

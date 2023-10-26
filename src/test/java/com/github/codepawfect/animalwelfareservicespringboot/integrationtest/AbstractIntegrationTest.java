@@ -1,6 +1,5 @@
 package com.github.codepawfect.animalwelfareservicespringboot.integrationtest;
 
-import com.github.codepawfect.animalwelfareservicespringboot.data.TestData;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,11 +15,9 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 public abstract class AbstractIntegrationTest {
 
-  @LocalServerPort
-  int randomServerPort;
+  @LocalServerPort int randomServerPort;
 
-  @Container
-  @ServiceConnection
+  @Container @ServiceConnection
   static PostgreSQLContainer<?> postgreSql = new PostgreSQLContainer<>("postgres:latest");
 
   @BeforeEach

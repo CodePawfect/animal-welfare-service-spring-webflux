@@ -19,13 +19,11 @@ public class DogController {
   private final DogService dogService;
   private final DogGetResourceMapper dogGetResourceMapper;
 
-  @Operation(
-      summary = "Get all dogs",
-      description = "Returns a list of all dogs",
-      tags = "dog")
+  @Operation(summary = "Get all dogs", description = "Returns a list of all dogs", tags = "dog")
   @GetMapping("/v1/dogs")
   public Mono<ResponseEntity<DogResources>> getDogs() {
-    return dogService.getDogs()
+    return dogService
+        .getDogs()
         .collectList()
         .map(dogGetResourceMapper::map)
         .map(ResponseEntity::ok);
@@ -33,10 +31,9 @@ public class DogController {
 
   @GetMapping("/v1/dog/{id}")
   public Mono<ResponseEntity<DogResource>> getDog(@PathVariable String id) {
-    return dogService.getDog(id)
-        .map(dogGetResourceMapper::map)
-        .map(ResponseEntity::ok);
+    return dogService.getDog(id).map(dogGetResourceMapper::map).map(ResponseEntity::ok);
   }
 
-  //TODO: add @CrossOrigin(<Azure Web Client IP>) on admin methods to restrict access and improve security
+  // TODO: add @CrossOrigin(<Azure Web Client IP>) on admin methods to restrict access and improve
+  // security
 }

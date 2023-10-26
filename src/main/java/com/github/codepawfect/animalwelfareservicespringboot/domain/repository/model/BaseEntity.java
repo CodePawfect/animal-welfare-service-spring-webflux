@@ -11,12 +11,9 @@ import org.springframework.data.annotation.Version;
 @NoArgsConstructor
 public class BaseEntity {
 
-  @Version
-  private Integer version;
+  @Version private Integer version;
 
-  @CreatedDate
-  private LocalDateTime createdAt;
+  @CreatedDate private LocalDateTime createdAt;
 
-  @LastModifiedDate
-  private LocalDateTime lastModifiedAt;
+  @LastModifiedDate private LocalDateTime lastModifiedAt;
 }

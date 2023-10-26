@@ -2,4 +2,4 @@ package com.github.codepawfect.animalwelfareservicespringboot.domain.service.mod
 
 import java.util.UUID;
 
-public record Dog (UUID id, String name, String breed, Integer age){}
+public record Dog(UUID id, String name, String breed, Integer age) {}
