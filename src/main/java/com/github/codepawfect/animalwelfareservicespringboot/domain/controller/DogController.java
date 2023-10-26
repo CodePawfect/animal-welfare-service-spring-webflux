@@ -28,12 +28,14 @@ public class DogController {
         .map(ResponseEntity::ok);
   }
 
+  @Operation(summary = "Get a single dog", description = "Returns a single dog", tags = "dog")
   @GetMapping("/v1/dog/{id}")
   public Mono<ResponseEntity<DogResource>> getDog(@PathVariable String id) {
     return dogService.getDog(id).map(dogResourceMapper::map).map(ResponseEntity::ok);
   }
 
-  @PostMapping
+  @Operation(summary = "Create a new dog", description = "Create a new dog", tags = "dog")
+  @PostMapping("/v1/dog")
   public Mono<ResponseEntity<DogResource>> addDog(@RequestBody DogResource dogResource) {
     return dogService.addDog(dogResourceMapper.map(dogResource)).map(dog ->
         ResponseEntity.status(HttpStatus.CREATED).body(dogResourceMapper.map(dog)));
