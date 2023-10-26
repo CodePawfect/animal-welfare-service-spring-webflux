@@ -4,6 +4,7 @@ import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.D
 import com.github.codepawfect.animalwelfareservicespringboot.domain.service.mapper.DogMapper;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.service.model.Dog;
 import java.util.UUID;
+import jdk.jshell.spi.ExecutionControl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -22,5 +23,9 @@ public class DogService {
 
   public Mono<Dog> getDog(String id) {
     return dogRepository.findById(UUID.fromString(id)).map(dogMapper::mapEntity);
+  }
+
+  public Mono<Dog> addDog(Dog dog) {
+    throw new UnsupportedOperationException("Method not yet implemented");
   }
 }
