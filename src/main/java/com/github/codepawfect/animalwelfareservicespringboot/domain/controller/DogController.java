@@ -21,11 +21,7 @@ public class DogController {
   @Operation(summary = "Get all dogs", description = "Returns a list of all dogs", tags = "dog")
   @GetMapping("/v1/dogs")
   public Mono<ResponseEntity<DogResources>> getDogs() {
-    return dogService
-        .getDogs()
-        .collectList()
-        .map(dogResourceMapper::map)
-        .map(ResponseEntity::ok);
+    return dogService.getDogs().collectList().map(dogResourceMapper::map).map(ResponseEntity::ok);
   }
 
   @Operation(summary = "Get a single dog", description = "Returns a single dog", tags = "dog")
@@ -37,9 +33,11 @@ public class DogController {
   @Operation(summary = "Create a new dog", description = "Create a new dog", tags = "dog")
   @PostMapping("/v1/dog")
   public Mono<ResponseEntity<DogResource>> addDog(@RequestBody DogResource dogResource) {
-    return dogService.addDog(dogResourceMapper.map(dogResource)).map(dog ->
-        ResponseEntity.status(HttpStatus.CREATED).body(dogResourceMapper.map(dog)));
+    return dogService
+        .addDog(dogResourceMapper.map(dogResource))
+        .map(dog -> ResponseEntity.status(HttpStatus.CREATED).body(dogResourceMapper.map(dog)));
   }
 
   // TODO: add @CrossOrigin(<Azure Web Client IP>) on admin methods to restrict access and improve
+  // security
 }

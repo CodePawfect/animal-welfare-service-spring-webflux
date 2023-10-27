@@ -1,14 +1,19 @@
 package com.github.codepawfect.animalwelfareservicespringboot.integrationtest;
 
+import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
 
 import com.github.codepawfect.animalwelfareservicespringboot.data.TestData;
+import com.github.codepawfect.animalwelfareservicespringboot.domain.controller.model.DogResource;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.DogRepository;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.model.DogEntity;
+import io.restassured.http.ContentType;
 import java.util.UUID;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.test.context.support.WithMockUser;
 
 class DogControllerIntegrationTest extends AbstractIntegrationTest {
 
@@ -49,5 +54,25 @@ class DogControllerIntegrationTest extends AbstractIntegrationTest {
         .log()
         .ifValidationFails()
         .body("id", equalTo(dogEntity.getId().toString()));
+  }
+
+  @Test
+  @WithMockUser(
+      username = "user",
+      roles = {"ADMIN"})
+  void createDog_returns_201_with_expected_dog() {
+    given()
+        .body(new DogResource(null, "Bello", "Mix", 2))
+        .contentType(ContentType.JSON)
+        .when()
+        .post("v1/dog")
+        .then()
+        .statusCode(201)
+        .log()
+        .ifValidationFails()
+        .body("id", notNullValue())
+        .body("name", equalTo("Bello"))
+        .body("breed", equalTo("Mix"))
+        .body("age", equalTo(2));
   }
 }
