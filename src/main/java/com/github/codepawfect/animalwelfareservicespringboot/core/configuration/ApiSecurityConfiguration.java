@@ -1,4 +1,4 @@
-package com.github.codepawfect.animalwelfareservicespringboot.core.config;
+package com.github.codepawfect.animalwelfareservicespringboot.core.configuration;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,6 +13,7 @@ public class ApiSecurityConfiguration {
 
   @Bean
   SecurityWebFilterChain springWebFilterChain(ServerHttpSecurity http) {
+    http.csrf(ServerHttpSecurity.CsrfSpec::disable);
     http.authorizeExchange(
         authorize ->
             authorize
@@ -20,7 +21,7 @@ public class ApiSecurityConfiguration {
                 .permitAll()
                 .pathMatchers(HttpMethod.GET, "/v1/dog/**")
                 .permitAll()
-                .pathMatchers("/v1/dog/**")
+                .pathMatchers("/v1/dog**")
                 .hasRole("ADMIN")
                 .anyExchange()
                 .denyAll());

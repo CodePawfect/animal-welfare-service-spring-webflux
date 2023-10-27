@@ -50,4 +50,19 @@ class DogServiceTest {
         .expectComplete()
         .verify();
   }
+
+  @Test
+  void addDog() {
+    // Arrange
+    when(dogMapper.mapModel(TestData.DOG_BUDDY)).thenReturn(TestData.DOG_ENTITY_BUDDY);
+    when(dogRepository.save(TestData.DOG_ENTITY_BUDDY))
+        .thenReturn(Mono.just(TestData.DOG_ENTITY_BUDDY));
+    when(dogMapper.mapEntity(TestData.DOG_ENTITY_BUDDY)).thenReturn(TestData.DOG_BUDDY);
+
+    // Act & Assert
+    StepVerifier.create(dogService.addDog(TestData.DOG_BUDDY))
+        .expectNext(TestData.DOG_BUDDY)
+        .expectComplete()
+        .verify();
+  }
 }

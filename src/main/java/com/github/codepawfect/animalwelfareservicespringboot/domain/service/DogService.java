@@ -23,4 +23,12 @@ public class DogService {
   public Mono<Dog> getDog(String id) {
     return dogRepository.findById(UUID.fromString(id)).map(dogMapper::mapEntity);
   }
+
+  public Mono<Dog> addDog(Dog dog) {
+    var dogEntity = dogMapper.mapModel(dog);
+
+    dogEntity.setId(UUID.randomUUID());
+
+    return dogRepository.save(dogEntity).map(dogMapper::mapEntity);
+  }
 }
