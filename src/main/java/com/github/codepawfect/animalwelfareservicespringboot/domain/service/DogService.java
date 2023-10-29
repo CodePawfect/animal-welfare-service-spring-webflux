@@ -1,5 +1,6 @@
 package com.github.codepawfect.animalwelfareservicespringboot.domain.service;
 
+import com.github.codepawfect.animalwelfareservicespringboot.core.service.BlobStorageService;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.DogRepository;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.service.mapper.DogMapper;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.service.model.Dog;
@@ -15,6 +16,7 @@ public class DogService {
 
   private final DogRepository dogRepository;
   private final DogMapper dogMapper;
+  private final BlobStorageService blobStorageService;
 
   public Flux<Dog> getDogs() {
     return dogRepository.findAll().map(dogMapper::mapEntity);

@@ -6,6 +6,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.test.context.ActiveProfiles;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -19,6 +20,10 @@ public abstract class AbstractIntegrationTest {
 
   @Container @ServiceConnection
   static PostgreSQLContainer<?> postgreSql = new PostgreSQLContainer<>("postgres:latest");
+
+  @Container
+  public static GenericContainer<?> azuriteContainer = new GenericContainer<>("mcr.microsoft.com/azure-storage/azurite")
+      .withExposedPorts(10000, 10001, 10002);
 
   @BeforeEach
   void init() {
