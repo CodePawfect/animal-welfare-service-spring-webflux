@@ -1,7 +1,7 @@
 spring:
   r2dbc:
     url: r2dbc:postgresql://localhost:5432/animal_welfare
-    username: postgresql
-    password: postgresql
+    username: postgres
+    password: postgres
   flyway:
     enabled: true
