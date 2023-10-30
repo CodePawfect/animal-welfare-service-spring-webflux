@@ -3,5 +3,12 @@ spring:
     url: r2dbc:postgresql://localhost:5432/animal_welfare
     username: postgresql
     password: postgresql
+  cloud:
+    azure:
+      storage:
+        blob:
+          account-name: devstoreaccount1
+          account-key: Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==
+          endpoint: http://localhost:10000/devstoreaccount1
   flyway:
     enabled: true

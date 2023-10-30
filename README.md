@@ -24,14 +24,9 @@ Prerequisites for local development:
 - Java 21
 - Docker
 
-Start Postgresql Database using docker 
-```bash
-docker run --name postgres -e POSTGRES_DB=animal_welfare -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -p 5432:5432 postgres:latest
-```
-
 Use the local profile from `src/main/resources/application-local.yml`
 
-Run app with Maven: `mvn spring-boot:run -Dspring-boot.run.profiles=local`
+Run app with Maven: `mvn spring-boot:run -D"spring-boot.run.profiles"=local`
 
 ## Formatting
 
