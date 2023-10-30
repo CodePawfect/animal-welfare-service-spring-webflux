@@ -1,0 +1,25 @@
+version: '3.7'
+
+services:
+  postgresql:
+    image: postgres:latest
+    container_name: postgresql
+    environment:
+      POSTGRES_DB: animal_welfare
+      POSTGRES_USER: postgresql
+      POSTGRES_PASSWORD: postgresql
+    ports:
+      - "5432:5432"
+    networks:
+      - mynetwork
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    container_name: azurite
+    ports:
+      - "10000:10000"  # Blob service port
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:
