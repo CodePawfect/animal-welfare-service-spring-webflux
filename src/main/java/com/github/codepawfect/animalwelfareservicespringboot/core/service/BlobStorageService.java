@@ -1,27 +1,27 @@
 package com.github.codepawfect.animalwelfareservicespringboot.core.service;
 
+import com.azure.storage.blob.BlobServiceClient;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import com.azure.storage.blob.BlobServiceClient;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+@RequiredArgsConstructor
 @Service
 public class BlobStorageService {
 
   private final BlobServiceClient blobServiceClient;
 
-  public BlobStorageService(BlobServiceClient blobServiceClient) {
-    this.blobServiceClient = blobServiceClient;
-  }
-
   /**
    * Upload files to blob storage
+   *
    * @param containerName container name
    * @param blobName blob name
    * @param data data
    */
-  public void uploadToBlob(String containerName, String blobName, InputStream data) throws IOException {
+  public void uploadToBlob(String containerName, String blobName, InputStream data)
+      throws IOException {
     var blobContainerClient = blobServiceClient.getBlobContainerClient(containerName);
     var blobClient = blobContainerClient.getBlobClient(blobName);
     blobClient.upload(data, data.available(), true);
@@ -29,6 +29,7 @@ public class BlobStorageService {
 
   /**
    * Read from blob storage
+   *
    * @param containerName container name
    * @param blobName blob name
    * @return data
@@ -45,6 +46,7 @@ public class BlobStorageService {
 
   /**
    * Delete from blob storage
+   *
    * @param containerName container name
    * @param blobName blob name
    */
@@ -53,5 +55,4 @@ public class BlobStorageService {
     var blobClient = blobContainerClient.getBlobClient(blobName);
     blobClient.delete();
   }
-
 }

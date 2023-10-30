@@ -18,6 +18,7 @@
         <spring-cloud-azure.version>5.5.0</spring-cloud-azure.version>
         <spotless-maven-plugin.version>2.39.0</spotless-maven-plugin.version>
         <springdoc-openapi-starter-webmvc-ui>2.2.0</springdoc-openapi-starter-webmvc-ui>
+        <snake-yaml-version>2.2</snake-yaml-version>
     </properties>
     <dependencies>
         <dependency>
@@ -51,6 +52,10 @@
         <dependency>
             <groupId>com.azure.spring</groupId>
             <artifactId>spring-cloud-azure-starter-jdbc-postgresql</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>
@@ -114,6 +119,11 @@
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>${springdoc-openapi-starter-webmvc-ui}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>${snake-yaml-version}</version>
         </dependency>
         <dependency>
             <groupId>io.rest-assured</groupId>

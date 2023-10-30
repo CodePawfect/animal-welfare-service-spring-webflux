@@ -22,8 +22,9 @@ public abstract class AbstractIntegrationTest {
   static PostgreSQLContainer<?> postgreSql = new PostgreSQLContainer<>("postgres:latest");
 
   @Container
-  public static GenericContainer<?> azuriteContainer = new GenericContainer<>("mcr.microsoft.com/azure-storage/azurite")
-      .withExposedPorts(10000, 10001, 10002);
+  public static GenericContainer<?> azuriteContainer =
+      new GenericContainer<>("mcr.microsoft.com/azure-storage/azurite")
+          .withExposedPorts(10000, 10001, 10002);
 
   @BeforeEach
   void init() {
