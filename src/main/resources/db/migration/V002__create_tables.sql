@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS t_dog_image
 (
     id     uuid    NOT NULL,
     dog_id uuid    NOT NULL,
-    url    varchar NOT NULL,
+    uri   varchar NOT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (dog_id) REFERENCES t_dog (id)
 );

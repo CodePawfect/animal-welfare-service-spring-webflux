@@ -11,5 +11,6 @@ public class TestData {
   private static final Integer AGE = 5;
   public static final DogEntity DOG_ENTITY_BUDDY =
       new DogEntity(UUID.randomUUID(), NAME, BREED, AGE);
-  public static final Dog DOG_BUDDY = new Dog(UUID.randomUUID(), NAME, BREED, AGE);
+  public static final Dog DOG_BUDDY =
+      Dog.builder().id(UUID.randomUUID()).name(NAME).breed(BREED).age(AGE).build();
 }

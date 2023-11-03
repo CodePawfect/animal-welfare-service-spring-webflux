@@ -15,10 +15,17 @@ public class DogResourceMapper {
   }
 
   public DogResource map(Dog dog) {
-    return new DogResource(dog.id(), dog.name(), dog.breed(), dog.age());
+    return new DogResource(
+        dog.getId(), dog.getName(), dog.getBreed(), dog.getAge(), dog.getImageUris());
   }
 
   public Dog map(DogResource dogResource) {
-    return new Dog(null, dogResource.name(), dogResource.breed(), dogResource.age());
+    return Dog.builder()
+        .id(dogResource.id())
+        .breed(dogResource.breed())
+        .age(dogResource.age())
+        .name(dogResource.name())
+        .imageUris(dogResource.imageUris())
+        .build();
   }
 }

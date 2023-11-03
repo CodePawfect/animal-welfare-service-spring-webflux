@@ -4,12 +4,12 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 
 import com.github.codepawfect.animalwelfareservicespringboot.data.TestData;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.controller.model.DogResource;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.DogRepository;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.model.DogEntity;
-import io.restassured.http.ContentType;
 import java.util.UUID;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,9 +61,13 @@ class DogControllerIntegrationTest extends AbstractIntegrationTest {
       username = "user",
       roles = {"ADMIN"})
   void createDog_returns_201_with_expected_dog() {
+    byte[] fileContent = "Test Image Content".getBytes();
+    String fileName = "test.jpg";
+
     given()
-        .body(new DogResource(null, "Bello", "Mix", 2))
-        .contentType(ContentType.JSON)
+        .contentType(MULTIPART_FORM_DATA_VALUE)
+        .multiPart("dog", new DogResource(null, "Bello", "Mix", 2, null), "application/json")
+        .multiPart("files", fileName, fileContent, "image/jpeg")
         .when()
         .post("v1/dog")
         .then()
@@ -73,6 +77,7 @@ class DogControllerIntegrationTest extends AbstractIntegrationTest {
         .body("id", notNullValue())
         .body("name", equalTo("Bello"))
         .body("breed", equalTo("Mix"))
-        .body("age", equalTo(2));
+        .body("age", equalTo(2))
+        .body("imageUris[0]", notNullValue());
   }
 }

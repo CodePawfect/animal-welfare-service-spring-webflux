@@ -5,10 +5,13 @@ import com.github.codepawfect.animalwelfareservicespringboot.domain.controller.m
 import com.github.codepawfect.animalwelfareservicespringboot.domain.controller.model.DogResources;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.service.DogService;
 import io.swagger.v3.oas.annotations.Operation;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Mono;
 
 @RequiredArgsConstructor
@@ -31,13 +34,14 @@ public class DogController {
   }
 
   @Operation(summary = "Create a new dog", description = "Create a new dog", tags = "dog")
-  @PostMapping("/v1/dog")
-  public Mono<ResponseEntity<DogResource>> addDog(@RequestBody DogResource dogResource) {
+  @PostMapping(
+      value = "/v1/dog",
+      consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+  public Mono<ResponseEntity<DogResource>> addDog(
+      @RequestPart("dog") DogResource dogResource,
+      @RequestPart("files") List<MultipartFile> files) {
     return dogService
-        .addDog(dogResourceMapper.map(dogResource))
+        .addDog(dogResourceMapper.map(dogResource), files)
         .map(dog -> ResponseEntity.status(HttpStatus.CREATED).body(dogResourceMapper.map(dog)));
   }
-
-  // TODO: add @CrossOrigin(<Azure Web Client IP>) on admin methods to restrict access and improve
-  // security
 }
