@@ -20,11 +20,13 @@ public class BlobStorageService {
    * @param blobName blob name
    * @param data data
    */
-  public void uploadToBlob(String containerName, String blobName, InputStream data)
+  public String uploadToBlob(String containerName, String blobName, InputStream data)
       throws IOException {
     var blobContainerClient = blobServiceClient.getBlobContainerClient(containerName);
     var blobClient = blobContainerClient.getBlobClient(blobName);
     blobClient.upload(data, data.available(), true);
+
+    return blobClient.getBlobUrl();
   }
 
   /**

@@ -7,12 +7,21 @@ import org.springframework.stereotype.Component;
 @Component
 public class DogMapper {
 
-  public Dog mapEntity(DogEntity dogEntity) {
-    return new Dog(
-        dogEntity.getId(), dogEntity.getName(), dogEntity.getBreed(), dogEntity.getAge());
+  public Dog mapToModel(DogEntity dogEntity) {
+    return Dog.builder()
+        .id(dogEntity.getId())
+        .age(dogEntity.getAge())
+        .breed(dogEntity.getBreed())
+        .name(dogEntity.getName())
+        .build();
   }
 
-  public DogEntity mapModel(Dog dog) {
-    return new DogEntity(dog.id(), dog.name(), dog.breed(), dog.age());
+  public DogEntity mapToEntity(Dog dog) {
+    return DogEntity.builder()
+        .id(dog.getId())
+        .age(dog.getAge())
+        .breed(dog.getBreed())
+        .name(dog.getName())
+        .build();
   }
 }
