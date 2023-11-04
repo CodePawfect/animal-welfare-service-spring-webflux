@@ -8,16 +8,20 @@ import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.m
 import com.github.codepawfect.animalwelfareservicespringboot.domain.service.mapper.DogMapper;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.service.model.Dog;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.MediaType;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -43,11 +47,11 @@ public class DogService {
     return dogRepository.findById(UUID.fromString(id)).map(dogMapper::mapToModel);
   }
 
-  public Mono<Dog> addDog(Dog dog, List<MultipartFile> files) {
+  public Mono<Dog> addDog(Dog dog, Flux<FilePart> filePartFlux) {
     var dogEntity = dogMapper.mapToEntity(dog);
     dogEntity.setId(UUID.randomUUID());
 
-    return Flux.fromIterable(files)
+    return filePartFlux
         .filter(this::isSupportedImage)
         .flatMap(this::saveToBlobStorage)
         .onErrorResume(
@@ -67,7 +71,7 @@ public class DogService {
                                       .dogId(dogEntity.getId())
                                       .uri(blobUrl)
                                       .build()))
-                      .collect(Collectors.toList());
+                      .toList();
 
               return Mono.zip(
                   dogRepository.save(dogEntity), Flux.merge(imageUriMonos).collectList());
@@ -79,29 +83,29 @@ public class DogService {
 
               Dog dogModel = dogMapper.mapToModel(savedDogEntity);
               dogModel.setImageUris(
-                  savedImageUris.stream().map(ImageUriEntity::getUri).collect(Collectors.toList()));
+                  savedImageUris.stream().map(ImageUriEntity::getUri)
+                      .toList());
 
               return Mono.just(dogModel);
             });
   }
 
-  private Mono<String> saveToBlobStorage(MultipartFile file) {
-    String blobName = UUID.randomUUID() + "-" + file.getOriginalFilename();
+  private Mono<String> saveToBlobStorage(FilePart file) {
+    String blobName = UUID.randomUUID() + "-" + file.filename();
 
-    return Mono.fromCallable(
-            () -> {
-              try (var inputStream = file.getInputStream()) {
-                return blobStorageService.uploadToBlob(containerName, blobName, inputStream);
-              }
-            })
-        .onErrorMap(
-            IOException.class,
-            e ->
-                new IllegalArgumentException(
-                    "Failed to upload file: " + file.getOriginalFilename(), e));
+    return file.content()
+        .flatMap(dataBuffer -> {
+          InputStream inputStream = dataBuffer.asInputStream(true);
+          return Mono.fromCallable(() -> blobStorageService.uploadToBlob(containerName, blobName, inputStream))
+              .subscribeOn(Schedulers.boundedElastic())
+              .doFinally(signalType -> DataBufferUtils.release(dataBuffer)); // Ensure releasing the data buffer
+        })
+        .next() // Since we are expecting only one FilePart, we can use next() to get Mono
+        .onErrorMap(IOException.class, e -> new IllegalArgumentException("Failed to upload file: " + file.filename(), e));
   }
 
-  private boolean isSupportedImage(MultipartFile file) {
-    return SUPPORTED_IMAGE_CONTENT_TYPES.contains(file.getContentType());
+  private boolean isSupportedImage(FilePart file) {
+    MediaType contentType = file.headers().getContentType();
+    return contentType != null && SUPPORTED_IMAGE_CONTENT_TYPES.contains(contentType.toString());
   }
 }

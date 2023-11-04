@@ -6,13 +6,20 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.codepawfect.animalwelfareservicespringboot.data.TestData;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.controller.model.DogResource;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.DogRepository;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.model.DogEntity;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.UUID;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 
 class DogControllerIntegrationTest extends AbstractIntegrationTest {
@@ -60,14 +67,19 @@ class DogControllerIntegrationTest extends AbstractIntegrationTest {
   @WithMockUser(
       username = "user",
       roles = {"ADMIN"})
-  void createDog_returns_201_with_expected_dog() {
-    byte[] fileContent = "Test Image Content".getBytes();
-    String fileName = "test.jpg";
+  void createDog_returns_201_with_expected_dog() throws IOException {
+    byte[] sampleImage1 = Files.readAllBytes(Paths.get("src/test/resources/test.jpg"));
+    byte[] sampleImage2 = Files.readAllBytes(Paths.get("src/test/resources/test.jpg"));
+
+    DogResource dogResource = new DogResource(null, "Bello", "Mix", 2, null);
+    String dogResourceJson = new ObjectMapper().writeValueAsString(dogResource);
+
 
     given()
         .contentType(MULTIPART_FORM_DATA_VALUE)
-        .multiPart("dog", new DogResource(null, "Bello", "Mix", 2, null), "application/json")
-        .multiPart("files", fileName, fileContent, "image/jpeg")
+        .multiPart("dog", dogResourceJson, MediaType.APPLICATION_JSON_VALUE)
+        .multiPart("files", "test.jpg", sampleImage1, "image/jpeg")
+        .multiPart("files", "test.jpg", sampleImage2, "image/jpeg")
         .when()
         .post("v1/dog")
         .then()
