@@ -10,8 +10,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RequiredArgsConstructor
@@ -36,12 +37,12 @@ public class DogController {
   @Operation(summary = "Create a new dog", description = "Create a new dog", tags = "dog")
   @PostMapping(
       value = "/v1/dog",
-      consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+      consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public Mono<ResponseEntity<DogResource>> addDog(
       @RequestPart("dog") DogResource dogResource,
-      @RequestPart("files") List<MultipartFile> files) {
+      @RequestPart("files") Flux<FilePart> filePartFlux) {
     return dogService
-        .addDog(dogResourceMapper.map(dogResource), files)
+        .addDog(dogResourceMapper.map(dogResource), filePartFlux)
         .map(dog -> ResponseEntity.status(HttpStatus.CREATED).body(dogResourceMapper.map(dog)));
   }
 }
