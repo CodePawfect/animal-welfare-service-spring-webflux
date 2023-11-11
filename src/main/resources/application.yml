@@ -12,5 +12,10 @@ spring:
       max-request-size: 25MB
 
 springdoc:
+  api-docs:
+    enabled: true
+    path: /api-documentation/v3/api-docs
   swagger-ui:
-    path: /swagger-ui.html
+    enabled: true
+    path: /api-documentation/swagger-ui
+    supported-submit-methods:
