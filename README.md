@@ -24,6 +24,8 @@ Prerequisites for local development:
 - Java 21
 - Docker
 
+Run docker-compose with `docker-compose up -d`
+
 Use the local profile from `src/main/resources/application-local.yml`
 
 Run app with Maven: `mvn spring-boot:run -D"spring-boot.run.profiles"=local`
