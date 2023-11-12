@@ -26,6 +26,13 @@ Prerequisites for local development:
 
 Run docker-compose with `docker-compose up -d`
 
+Ensure you have the Azure CLI installed. If you haven't already, install the Azure CLI. You can find installation instructions on the official Azure documentation.
+
+Create `dog-images` container inside azurite:
+```bash
+az storage container create --name dog-images --connection-string "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;"
+```
+
 Use the local profile from `src/main/resources/application-local.yml`
 
 Run app with Maven: `mvn spring-boot:run -D"spring-boot.run.profiles"=local`
