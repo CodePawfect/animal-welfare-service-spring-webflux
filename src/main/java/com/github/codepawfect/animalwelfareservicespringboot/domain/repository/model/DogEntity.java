@@ -16,5 +16,6 @@ public class DogEntity extends BaseEntity {
   @Id private UUID id;
   private String name;
   private String breed;
+  private String description;
   private Integer age;
 }

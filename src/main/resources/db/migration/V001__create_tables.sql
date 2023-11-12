@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS t_dog
     name  varchar NOT NULL,
     age   integer NOT NULL,
     breed varchar NOT NULL,
+    description varchar NOT NULL,
     PRIMARY KEY (id)
 );
 

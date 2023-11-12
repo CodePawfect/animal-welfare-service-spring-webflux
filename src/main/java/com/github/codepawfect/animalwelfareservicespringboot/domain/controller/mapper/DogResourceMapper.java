@@ -1,5 +1,6 @@
 package com.github.codepawfect.animalwelfareservicespringboot.domain.controller.mapper;
 
+import com.github.codepawfect.animalwelfareservicespringboot.domain.controller.model.DogCreateResource;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.controller.model.DogResource;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.controller.model.DogResources;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.service.model.Dog;
@@ -26,6 +27,15 @@ public class DogResourceMapper {
         .age(dogResource.age())
         .name(dogResource.name())
         .imageUris(dogResource.imageUris())
+        .build();
+  }
+
+  public Dog map(DogCreateResource dogCreateResource) {
+    return Dog.builder()
+        .name(dogCreateResource.name())
+        .breed(dogCreateResource.breed())
+        .age(dogCreateResource.age())
+        .description(dogCreateResource.description())
         .build();
   }
 }
