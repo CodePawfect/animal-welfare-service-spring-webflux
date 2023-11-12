@@ -23,7 +23,8 @@ public class ApiSecurityConfiguration {
                 .permitAll()
                 .pathMatchers("/v1/dog**")
                 .hasRole("ADMIN")
-                .pathMatchers("/api-documentation/**").permitAll()
+                .pathMatchers("/api-documentation/**")
+                .permitAll()
                 .anyExchange()
                 .denyAll());
     return http.build();
