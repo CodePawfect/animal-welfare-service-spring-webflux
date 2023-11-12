@@ -1,11 +1,12 @@
 package com.github.codepawfect.animalwelfareservicespringboot.domain.controller;
 
 import com.github.codepawfect.animalwelfareservicespringboot.domain.controller.mapper.DogResourceMapper;
+import com.github.codepawfect.animalwelfareservicespringboot.domain.controller.model.DogCreateResource;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.controller.model.DogResource;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.controller.model.DogResources;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.service.DogService;
 import io.swagger.v3.oas.annotations.Operation;
-import java.util.List;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -39,10 +40,10 @@ public class DogController {
       value = "/v1/dog",
       consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public Mono<ResponseEntity<DogResource>> addDog(
-      @RequestPart("dog") DogResource dogResource,
-      @RequestPart("files") Flux<FilePart> filePartFlux) {
+      @RequestPart("dogCreateResource") DogCreateResource dogCreateResource,
+      @RequestPart("files") @Parameter(description = "Dog Images to be uploaded. Must be JPEG or PNG.") Flux<FilePart> filePartFlux) {
     return dogService
-        .addDog(dogResourceMapper.map(dogResource), filePartFlux)
+        .addDog(dogResourceMapper.map(dogCreateResource), filePartFlux)
         .map(dog -> ResponseEntity.status(HttpStatus.CREATED).body(dogResourceMapper.map(dog)));
   }
 }

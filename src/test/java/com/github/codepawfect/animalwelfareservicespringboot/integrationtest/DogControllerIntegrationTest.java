@@ -9,6 +9,7 @@ import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.codepawfect.animalwelfareservicespringboot.data.TestData;
+import com.github.codepawfect.animalwelfareservicespringboot.domain.controller.model.DogCreateResource;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.controller.model.DogResource;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.DogRepository;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.model.DogEntity;
@@ -71,13 +72,13 @@ class DogControllerIntegrationTest extends AbstractIntegrationTest {
     byte[] sampleImage1 = Files.readAllBytes(Paths.get("src/test/resources/test.jpg"));
     byte[] sampleImage2 = Files.readAllBytes(Paths.get("src/test/resources/test.jpg"));
 
-    DogResource dogResource = new DogResource(null, "Bello", "Mix", 2, null);
-    String dogResourceJson = new ObjectMapper().writeValueAsString(dogResource);
+    DogCreateResource dogCreateResource = new DogCreateResource( "Bello", "Mix", "Description", 2);
+    String dogCreateResourceJson = new ObjectMapper().writeValueAsString(dogCreateResource);
 
 
     given()
         .contentType(MULTIPART_FORM_DATA_VALUE)
-        .multiPart("dog", dogResourceJson, MediaType.APPLICATION_JSON_VALUE)
+        .multiPart("dogCreateResource", dogCreateResourceJson, MediaType.APPLICATION_JSON_VALUE)
         .multiPart("files", "test.jpg", sampleImage1, "image/jpeg")
         .multiPart("files", "test.jpg", sampleImage2, "image/jpeg")
         .when()
@@ -89,6 +90,7 @@ class DogControllerIntegrationTest extends AbstractIntegrationTest {
         .body("id", notNullValue())
         .body("name", equalTo("Bello"))
         .body("breed", equalTo("Mix"))
+        .body("description", equalTo("Description"))
         .body("age", equalTo(2))
         .body("imageUris[0]", notNullValue());
   }

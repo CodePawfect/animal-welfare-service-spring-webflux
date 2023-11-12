@@ -11,6 +11,7 @@ public class Dog {
   private UUID id;
   private String name;
   private String breed;
+  private String description;
   private Integer age;
   private List<String> imageUris;
 }
