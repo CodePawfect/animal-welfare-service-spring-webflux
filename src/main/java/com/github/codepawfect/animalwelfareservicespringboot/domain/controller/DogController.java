@@ -36,12 +36,12 @@ public class DogController {
   }
 
   @Operation(summary = "Create a new dog", description = "Create a new dog", tags = "dog")
-  @PostMapping(
-      value = "/v1/dog",
-      consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PostMapping(value = "/v1/dog", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public Mono<ResponseEntity<DogResource>> addDog(
       @RequestPart("dogCreateResource") DogCreateResource dogCreateResource,
-      @RequestPart("files") @Parameter(description = "Dog Images to be uploaded. Must be JPEG or PNG.") Flux<FilePart> filePartFlux) {
+      @RequestPart("files")
+          @Parameter(description = "Dog Images to be uploaded. Must be JPEG or PNG.")
+          Flux<FilePart> filePartFlux) {
     return dogService
         .addDog(dogResourceMapper.map(dogCreateResource), filePartFlux)
         .map(dog -> ResponseEntity.status(HttpStatus.CREATED).body(dogResourceMapper.map(dog)));

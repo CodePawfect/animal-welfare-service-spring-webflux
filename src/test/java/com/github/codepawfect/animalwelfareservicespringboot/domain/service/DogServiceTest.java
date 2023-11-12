@@ -9,10 +9,8 @@ import com.github.codepawfect.animalwelfareservicespringboot.data.TestData;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.DogRepository;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.model.DogEntity;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.service.mapper.DogMapper;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,21 +22,16 @@ import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.multipart.FilePart;
-import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 @ExtendWith(MockitoExtension.class)
 class DogServiceTest {
-  @Mock
-  private DogRepository dogRepository;
-  @Mock
-  private DogMapper dogMapper;
-  @Mock
-  private BlobStorageService blobStorageService;
-  @InjectMocks
-  private DogService dogService;
+  @Mock private DogRepository dogRepository;
+  @Mock private DogMapper dogMapper;
+  @Mock private BlobStorageService blobStorageService;
+  @InjectMocks private DogService dogService;
 
   @Test
   void getDogs() {
@@ -99,4 +92,3 @@ class DogServiceTest {
     verify(blobStorageService, times(1)).uploadToBlob(any(), anyString(), any(InputStream.class));
   }
 }
-

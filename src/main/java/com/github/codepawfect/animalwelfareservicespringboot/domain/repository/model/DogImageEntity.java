@@ -5,13 +5,13 @@ import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
-@Table("t_image_uri")
+@Table("t_dog_image")
 @Getter
 @Setter
 @Builder(toBuilder = true)
 @RequiredArgsConstructor
 @AllArgsConstructor
-public class ImageUriEntity extends BaseEntity {
+public class DogImageEntity extends BaseEntity {
 
   @Id private UUID id;
   private UUID dogId;

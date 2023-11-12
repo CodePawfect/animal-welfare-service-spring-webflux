@@ -6,14 +6,12 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.codepawfect.animalwelfareservicespringboot.data.TestData;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.controller.model.DogCreateResource;
-import com.github.codepawfect.animalwelfareservicespringboot.domain.controller.model.DogResource;
+import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.DogImageRepository;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.DogRepository;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.model.DogEntity;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -26,6 +24,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 class DogControllerIntegrationTest extends AbstractIntegrationTest {
 
   @Autowired private DogRepository dogRepository;
+  @Autowired private DogImageRepository dogImageRepository;
 
   private DogEntity dogEntity;
 
@@ -39,6 +38,7 @@ class DogControllerIntegrationTest extends AbstractIntegrationTest {
 
   @AfterEach
   void cleanUp() {
+    dogImageRepository.deleteAll().block();
     dogRepository.deleteAll().block();
   }
 
@@ -72,9 +72,8 @@ class DogControllerIntegrationTest extends AbstractIntegrationTest {
     byte[] sampleImage1 = Files.readAllBytes(Paths.get("src/test/resources/test.jpg"));
     byte[] sampleImage2 = Files.readAllBytes(Paths.get("src/test/resources/test.jpg"));
 
-    DogCreateResource dogCreateResource = new DogCreateResource( "Bello", "Mix", "Description", 2);
+    DogCreateResource dogCreateResource = new DogCreateResource("Bello", "Mix", "Description", 2);
     String dogCreateResourceJson = new ObjectMapper().writeValueAsString(dogCreateResource);
-
 
     given()
         .contentType(MULTIPART_FORM_DATA_VALUE)
