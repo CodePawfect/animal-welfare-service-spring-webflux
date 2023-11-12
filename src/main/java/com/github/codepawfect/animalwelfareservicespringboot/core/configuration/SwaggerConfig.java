@@ -15,6 +15,6 @@ public class SwaggerConfig {
             new Info()
                 .title("DOG-SERVICE API")
                 .description(
-                    "Service providing endpoints for materials of orders and inventory maintenance"));
+                    "Service providing dog information for the Animal Welfare Service Spring Boot application"));
   }
 }
