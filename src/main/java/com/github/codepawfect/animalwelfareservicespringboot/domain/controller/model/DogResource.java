@@ -4,4 +4,4 @@ import java.util.List;
 import java.util.UUID;
 
 public record DogResource(
-    UUID id, String name, String breed, Integer age, List<String> imageUris) {}
+    UUID id, String name, String breed, String description, Integer age, List<String> imageUris) {}

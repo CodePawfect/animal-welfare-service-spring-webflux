@@ -8,10 +8,16 @@ public class TestData {
 
   private static final String NAME = "Buddy";
   private static final String BREED = "Labrador";
-  private static final String Description = "Description";
+  private static final String DESCRIPTION = "Description";
   private static final Integer AGE = 5;
   public static final DogEntity DOG_ENTITY_BUDDY =
-      new DogEntity(UUID.randomUUID(), NAME, BREED, Description, AGE);
+      new DogEntity(UUID.randomUUID(), NAME, BREED, DESCRIPTION, AGE);
   public static final Dog DOG_BUDDY =
-      Dog.builder().id(UUID.randomUUID()).name(NAME).breed(BREED).age(AGE).build();
+      Dog.builder()
+          .id(UUID.randomUUID())
+          .name(NAME)
+          .breed(BREED)
+          .age(AGE)
+          .description(DESCRIPTION)
+          .build();
 }

@@ -17,7 +17,12 @@ public class DogResourceMapper {
 
   public DogResource map(Dog dog) {
     return new DogResource(
-        dog.getId(), dog.getName(), dog.getBreed(), dog.getAge(), dog.getImageUris());
+        dog.getId(),
+        dog.getName(),
+        dog.getBreed(),
+        dog.getDescription(),
+        dog.getAge(),
+        dog.getImageUris());
   }
 
   public Dog map(DogResource dogResource) {

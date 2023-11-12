@@ -12,6 +12,7 @@ public class DogMapper {
         .id(dogEntity.getId())
         .age(dogEntity.getAge())
         .breed(dogEntity.getBreed())
+        .description(dogEntity.getDescription())
         .name(dogEntity.getName())
         .build();
   }
@@ -21,6 +22,7 @@ public class DogMapper {
         .id(dog.getId())
         .age(dog.getAge())
         .breed(dog.getBreed())
+        .description(dog.getDescription())
         .name(dog.getName())
         .build();
   }

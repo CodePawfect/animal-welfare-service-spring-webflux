@@ -1,10 +1,10 @@
 package com.github.codepawfect.animalwelfareservicespringboot.domain.service;
 
 import com.github.codepawfect.animalwelfareservicespringboot.core.service.BlobStorageService;
+import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.DogImageRepository;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.DogRepository;
-import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.ImageUriRepository;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.model.DogEntity;
-import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.model.ImageUriEntity;
+import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.model.DogImageEntity;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.service.mapper.DogMapper;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.service.model.Dog;
 import java.io.IOException;
@@ -27,7 +27,7 @@ import reactor.core.scheduler.Schedulers;
 public class DogService {
 
   private final DogRepository dogRepository;
-  private final ImageUriRepository imageUriRepository;
+  private final DogImageRepository dogImageRepository;
   private final DogMapper dogMapper;
   private final BlobStorageService blobStorageService;
 
@@ -60,12 +60,13 @@ public class DogService {
         .collectList()
         .flatMap(
             blobUrls -> {
-              List<Mono<ImageUriEntity>> imageUriMonos =
+              List<Mono<DogImageEntity>> imageUriMonos =
                   blobUrls.stream()
                       .map(
                           blobUrl ->
-                              imageUriRepository.save(
-                                  ImageUriEntity.builder()
+                              dogImageRepository.save(
+                                  DogImageEntity.builder()
+                                      .id(UUID.randomUUID())
                                       .dogId(dogEntity.getId())
                                       .uri(blobUrl)
                                       .build()))
@@ -77,12 +78,10 @@ public class DogService {
         .flatMap(
             tuple -> {
               DogEntity savedDogEntity = tuple.getT1();
-              List<ImageUriEntity> savedImageUris = tuple.getT2();
+              List<DogImageEntity> savedImageUris = tuple.getT2();
 
               Dog dogModel = dogMapper.mapToModel(savedDogEntity);
-              dogModel.setImageUris(
-                  savedImageUris.stream().map(ImageUriEntity::getUri)
-                      .toList());
+              dogModel.setImageUris(savedImageUris.stream().map(DogImageEntity::getUri).toList());
 
               return Mono.just(dogModel);
             });
@@ -92,14 +91,20 @@ public class DogService {
     String blobName = UUID.randomUUID() + "-" + file.filename();
 
     return file.content()
-        .flatMap(dataBuffer -> {
-          InputStream inputStream = dataBuffer.asInputStream(true);
-          return Mono.fromCallable(() -> blobStorageService.uploadToBlob(containerName, blobName, inputStream))
-              .subscribeOn(Schedulers.boundedElastic())
-              .doFinally(signalType -> DataBufferUtils.release(dataBuffer)); // Ensure releasing the data buffer
-        })
+        .flatMap(
+            dataBuffer -> {
+              InputStream inputStream = dataBuffer.asInputStream(true);
+              return Mono.fromCallable(
+                      () -> blobStorageService.uploadToBlob(containerName, blobName, inputStream))
+                  .subscribeOn(Schedulers.boundedElastic())
+                  .doFinally(
+                      signalType ->
+                          DataBufferUtils.release(dataBuffer)); // Ensure releasing the data buffer
+            })
         .next() // Since we are expecting only one FilePart, we can use next() to get Mono
-        .onErrorMap(IOException.class, e -> new IllegalArgumentException("Failed to upload file: " + file.filename(), e));
+        .onErrorMap(
+            IOException.class,
+            e -> new IllegalArgumentException("Failed to upload file: " + file.filename(), e));
   }
 
   private boolean isSupportedImage(FilePart file) {
