@@ -51,29 +51,26 @@ public class DogService {
 
     return filePartFlux
         .filter(this::isSupportedImage)
+        .switchIfEmpty(
+            Mono.error(
+                new IllegalArgumentException(
+                    "No supported image files found in request. Supported image types are JPEG and PNG.")))
         .flatMap(this::saveToBlobStorage)
         .onErrorResume(
             e -> {
-              log.error("Failed to upload file", e);
+              log.error("Failed to upload file to blob storage", e);
               return Mono.empty();
             })
         .collectList()
         .flatMap(
             blobUrls -> {
-              List<Mono<DogImageEntity>> imageUriMonos =
+              List<Mono<DogImageEntity>> dogImageEntities =
                   blobUrls.stream()
-                      .map(
-                          blobUrl ->
-                              dogImageRepository.save(
-                                  DogImageEntity.builder()
-                                      .id(UUID.randomUUID())
-                                      .dogId(dogEntity.getId())
-                                      .uri(blobUrl)
-                                      .build()))
+                      .map(blobUrl -> saveDogImage(dogEntity.getId(), blobUrl))
                       .toList();
 
               return Mono.zip(
-                  dogRepository.save(dogEntity), Flux.merge(imageUriMonos).collectList());
+                  dogRepository.save(dogEntity), Flux.merge(dogImageEntities).collectList());
             })
         .flatMap(
             tuple -> {
@@ -87,6 +84,11 @@ public class DogService {
             });
   }
 
+  private Mono<DogImageEntity> saveDogImage(UUID dogId, String blobUrl) {
+    return dogImageRepository.save(
+        DogImageEntity.builder().id(UUID.randomUUID()).dogId(dogId).uri(blobUrl).build());
+  }
+
   private Mono<String> saveToBlobStorage(FilePart file) {
     String blobName = UUID.randomUUID() + "-" + file.filename();
 
@@ -94,14 +96,13 @@ public class DogService {
         .flatMap(
             dataBuffer -> {
               InputStream inputStream = dataBuffer.asInputStream(true);
+
               return Mono.fromCallable(
                       () -> blobStorageService.uploadToBlob(containerName, blobName, inputStream))
                   .subscribeOn(Schedulers.boundedElastic())
-                  .doFinally(
-                      signalType ->
-                          DataBufferUtils.release(dataBuffer)); // Ensure releasing the data buffer
+                  .doFinally(signalType -> DataBufferUtils.release(dataBuffer));
             })
-        .next() // Since we are expecting only one FilePart, we can use next() to get Mono
+        .next()
         .onErrorMap(
             IOException.class,
             e -> new IllegalArgumentException("Failed to upload file: " + file.filename(), e));
