@@ -23,12 +23,9 @@ public class ApiSecurityConfiguration {
                 .permitAll()
                 .pathMatchers("/v1/dog**")
                 .hasRole("ADMIN")
-                .pathMatchers("/api-documentation/v3/api-docs")
-                .permitAll()
-                .pathMatchers("/api-documentation/swagger-ui**, /api-documentation/**")
-                .permitAll()
+                .pathMatchers("/api-documentation/**").permitAll()
                 .anyExchange()
-                .permitAll());
+                .denyAll());
     return http.build();
   }
 }
