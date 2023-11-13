@@ -32,7 +32,7 @@ public class ApiSecurityConfiguration {
                 .permitAll()
                 .pathMatchers(HttpMethod.GET, "/v1/dog/{id}")
                 .permitAll()
-                .pathMatchers(HttpMethod.POST,"/v1/dog")
+                .pathMatchers(HttpMethod.POST, "/v1/dog")
                 .hasRole("ADMIN")
                 .pathMatchers("/api-documentation/**")
                 .permitAll()

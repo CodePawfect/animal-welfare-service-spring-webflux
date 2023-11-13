@@ -45,9 +45,10 @@ class DogServiceTest {
 
     // Act & Assert
     StepVerifier.create(dogService.getDogs())
-        .expectNext(TestData.DOG_BUDDY.toBuilder()
-            .imageUris(List.of(TestData.DOG_IMAGE_ENTITY.getUri()))
-            .build())
+        .expectNext(
+            TestData.DOG_BUDDY.toBuilder()
+                .imageUris(List.of(TestData.DOG_IMAGE_ENTITY.getUri()))
+                .build())
         .expectComplete()
         .verify();
   }
@@ -63,9 +64,10 @@ class DogServiceTest {
 
     // Act & Assert
     StepVerifier.create(dogService.getDog(TestData.DOG_ENTITY_BUDDY.getId().toString()))
-        .expectNext(TestData.DOG_BUDDY.toBuilder()
-            .imageUris(List.of(TestData.DOG_IMAGE_ENTITY.getUri()))
-            .build())
+        .expectNext(
+            TestData.DOG_BUDDY.toBuilder()
+                .imageUris(List.of(TestData.DOG_IMAGE_ENTITY.getUri()))
+                .build())
         .expectComplete()
         .verify();
   }

@@ -15,8 +15,10 @@ public class LoginService {
 
   public Mono<UserDetails> authenticate(String username, String password) {
     return Mono.justOrEmpty(adminUser)
-        .filter(user -> user.getUsername().equals(username) &&
-            passwordEncoder.matches(password, user.getPassword()))
+        .filter(
+            user ->
+                user.getUsername().equals(username)
+                    && passwordEncoder.matches(password, user.getPassword()))
         .switchIfEmpty(Mono.empty());
   }
 }

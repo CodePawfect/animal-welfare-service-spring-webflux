@@ -38,28 +38,37 @@ public class DogService {
       Set.of(MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE);
 
   public Flux<Dog> getDogs() {
-    return dogRepository.findAll().flatMap(dogEntity -> dogImageRepository.findAllByDogId(dogEntity.getId())
-        .collectList()
-        .map(dogImageEntities -> {
-                Dog dog = dogMapper.mapToModel(dogEntity);
-                dog.setImageUris(dogImageEntities.stream()
-                    .map(DogImageEntity::getUri)
-                    .toList());
-                return dog;
-            }));
+    return dogRepository
+        .findAll()
+        .flatMap(
+            dogEntity ->
+                dogImageRepository
+                    .findAllByDogId(dogEntity.getId())
+                    .collectList()
+                    .map(
+                        dogImageEntities -> {
+                          Dog dog = dogMapper.mapToModel(dogEntity);
+                          dog.setImageUris(
+                              dogImageEntities.stream().map(DogImageEntity::getUri).toList());
+                          return dog;
+                        }));
   }
 
   public Mono<Dog> getDog(String id) {
-    return dogRepository.findById(UUID.fromString(id))
-        .flatMap(dogEntity -> dogImageRepository.findAllByDogId(dogEntity.getId())
-        .collectList()
-        .map(dogImageEntities -> {
-                Dog dog = dogMapper.mapToModel(dogEntity);
-                dog.setImageUris(dogImageEntities.stream()
-                    .map(DogImageEntity::getUri)
-                    .toList());
-                return dog;
-            }));
+    return dogRepository
+        .findById(UUID.fromString(id))
+        .flatMap(
+            dogEntity ->
+                dogImageRepository
+                    .findAllByDogId(dogEntity.getId())
+                    .collectList()
+                    .map(
+                        dogImageEntities -> {
+                          Dog dog = dogMapper.mapToModel(dogEntity);
+                          dog.setImageUris(
+                              dogImageEntities.stream().map(DogImageEntity::getUri).toList());
+                          return dog;
+                        }));
   }
 
   public Mono<Dog> addDog(Dog dog, Flux<FilePart> filePartFlux) {
