@@ -13,11 +13,12 @@ public class TestData {
   private static final UUID DOG_ID = UUID.randomUUID();
   public static final DogEntity DOG_ENTITY_BUDDY =
       new DogEntity(DOG_ID, NAME, BREED, DESCRIPTION, AGE);
-  public static final DogImageEntity DOG_IMAGE_ENTITY = DogImageEntity.builder()
-      .id(UUID.randomUUID())
-      .dogId(DOG_ID)
-      .uri("https://animalwelfareservice.blob.core.windows.net/dog-images/1.jpg")
-      .build();
+  public static final DogImageEntity DOG_IMAGE_ENTITY =
+      DogImageEntity.builder()
+          .id(UUID.randomUUID())
+          .dogId(DOG_ID)
+          .uri("https://animalwelfareservice.blob.core.windows.net/dog-images/1.jpg")
+          .build();
   public static final Dog DOG_BUDDY =
       Dog.builder()
           .id(UUID.randomUUID())

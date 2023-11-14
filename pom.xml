@@ -19,6 +19,7 @@
         <spotless-maven-plugin.version>2.39.0</spotless-maven-plugin.version>
         <snake-yaml-version>2.2</snake-yaml-version>
         <springdoc-openapi-webflux.version>2.2.0</springdoc-openapi-webflux.version>
+        <jjwt-version>0.11.2</jjwt-version>
     </properties>
     <dependencies>
         <dependency>
@@ -129,6 +130,23 @@
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>${jjwt-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>${jjwt-version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>${jjwt-version}</version>
+            <scope>runtime</scope>
         </dependency>
     </dependencies>
     <dependencyManagement>
