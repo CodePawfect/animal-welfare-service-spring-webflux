@@ -23,3 +23,6 @@ springdoc:
 management:
   username: default_user
   password: default_password
+
+jwt:
+  secret: f70a1a5d-240f-4b57-af03-d3390643f10f
