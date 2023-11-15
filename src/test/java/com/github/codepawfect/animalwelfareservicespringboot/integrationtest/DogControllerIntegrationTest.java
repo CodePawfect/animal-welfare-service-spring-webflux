@@ -1,25 +1,27 @@
 package com.github.codepawfect.animalwelfareservicespringboot.integrationtest;
 
-import static io.restassured.RestAssured.given;
-import static io.restassured.RestAssured.when;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
-
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.UUID;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.codepawfect.animalwelfareservicespringboot.data.TestData;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.controller.model.DogCreateResource;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.DogImageRepository;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.DogRepository;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.model.DogEntity;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.UUID;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+
+import static io.restassured.RestAssured.given;
+import static io.restassured.RestAssured.when;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 
 class DogControllerIntegrationTest extends AbstractIntegrationTest {
 
@@ -93,4 +95,7 @@ class DogControllerIntegrationTest extends AbstractIntegrationTest {
         .body("age", equalTo(2))
         .body("imageUris[0]", notNullValue());
   }
+
+  // TODO: add deleteDog integration-test
+  // TODO: add 401 integration-tests for secured endpoints
 }

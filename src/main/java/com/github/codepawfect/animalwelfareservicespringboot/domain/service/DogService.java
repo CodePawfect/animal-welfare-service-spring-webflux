@@ -1,5 +1,10 @@
 package com.github.codepawfect.animalwelfareservicespringboot.domain.service;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import com.github.codepawfect.animalwelfareservicespringboot.core.service.BlobStorageService;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.DogImageRepository;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.DogRepository;
@@ -7,9 +12,6 @@ import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.m
 import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.model.DogImageEntity;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.service.mapper.DogMapper;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.service.model.Dog;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,9 +19,9 @@ import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -110,6 +112,26 @@ public class DogService {
             });
   }
 
+  @Transactional
+  public Mono<Void> deleteDog(String id) {
+    return dogRepository
+        .findById(UUID.fromString(id))
+        .switchIfEmpty(Mono.error(new IllegalStateException("Dog not found with ID: " + id)))
+        .flatMap(
+            dogEntity -> {
+              Flux<String> uris =
+                  dogImageRepository.findAllByDogId(dogEntity.getId()).map(DogImageEntity::getUri);
+              return dogImageRepository
+                  .deleteById(dogEntity.getId())
+                  .then(blobStorageService.deleteBlobs(this.containerName, extractBlobNames(uris)))
+                  .then(dogRepository.deleteById(dogEntity.getId()));
+            });
+  }
+
+  private Flux<String> extractBlobNames(Flux<String> uris) {
+    return uris.map(uri -> uri.substring(uri.lastIndexOf("/") + 1));
+  }
+
   private Mono<DogImageEntity> saveDogImage(UUID dogId, String blobUrl) {
     return dogImageRepository.save(
         DogImageEntity.builder().id(UUID.randomUUID()).dogId(dogId).uri(blobUrl).build());
@@ -118,17 +140,14 @@ public class DogService {
   private Mono<String> saveToBlobStorage(FilePart file) {
     String blobName = UUID.randomUUID() + "-" + file.filename();
 
-    return file.content()
+    return DataBufferUtils.join(file.content())
         .flatMap(
             dataBuffer -> {
               InputStream inputStream = dataBuffer.asInputStream(true);
-
-              return Mono.fromCallable(
-                      () -> blobStorageService.uploadToBlob(containerName, blobName, inputStream))
-                  .subscribeOn(Schedulers.boundedElastic())
+              return blobStorageService
+                  .uploadToBlob(containerName, blobName, inputStream)
                   .doFinally(signalType -> DataBufferUtils.release(dataBuffer));
             })
-        .next()
         .onErrorMap(
             IOException.class,
             e -> new IllegalArgumentException("Failed to upload file: " + file.filename(), e));

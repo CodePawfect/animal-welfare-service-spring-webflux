@@ -46,4 +46,10 @@ public class DogController {
         .addDog(dogResourceMapper.map(dogCreateResource), filePartFlux)
         .map(dog -> ResponseEntity.status(HttpStatus.CREATED).body(dogResourceMapper.map(dog)));
   }
+
+  @Operation(summary = "Delete a dog", description = "Delete a dog", tags = "dog")
+  @DeleteMapping(value = "/v1/dog/{id}")
+  public Mono<ResponseEntity<Void>> deleteDog(@PathVariable String id) {
+    return dogService.deleteDog(id).then(Mono.just(ResponseEntity.noContent().build()));
+  }
 }
