@@ -3,6 +3,7 @@ package com.github.codepawfect.animalwelfareservicespringboot.data;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.model.DogEntity;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.model.DogImageEntity;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.service.model.Dog;
+import java.util.Collections;
 import java.util.UUID;
 
 public class TestData {
@@ -21,10 +22,11 @@ public class TestData {
           .build();
   public static final Dog DOG_BUDDY =
       Dog.builder()
-          .id(UUID.randomUUID())
+          .id(DOG_ID)
           .name(NAME)
           .breed(BREED)
           .age(AGE)
           .description(DESCRIPTION)
+          .imageUris(Collections.emptyList())
           .build();
 }

@@ -1,8 +1,9 @@
 package com.github.codepawfect.animalwelfareservicespringboot.domain.service;
 
-import java.io.InputStream;
-import java.util.List;
-import java.util.UUID;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+
 import com.github.codepawfect.animalwelfareservicespringboot.core.service.BlobStorageService;
 import com.github.codepawfect.animalwelfareservicespringboot.data.TestData;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.DogImageRepository;
@@ -11,10 +12,14 @@ import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.m
 import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.model.DogImageEntity;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.service.mapper.DogMapper;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.service.model.Dog;
+import java.io.InputStream;
+import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
@@ -25,15 +30,11 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
 class DogServiceTest {
   @Mock private DogRepository dogRepository;
   @Mock private DogImageRepository dogImageRepository;
-  @Mock private DogMapper dogMapper;
+  @Spy private DogMapper dogMapper;
   @Mock private BlobStorageService blobStorageService;
   @InjectMocks private DogService dogService;
 
@@ -43,7 +44,6 @@ class DogServiceTest {
     when(dogRepository.findAll()).thenReturn(Flux.fromIterable(List.of(TestData.DOG_ENTITY_BUDDY)));
     when(dogImageRepository.findAllByDogId(TestData.DOG_ENTITY_BUDDY.getId()))
         .thenReturn(Flux.fromIterable(List.of(TestData.DOG_IMAGE_ENTITY)));
-    when(dogMapper.mapToModel(TestData.DOG_ENTITY_BUDDY)).thenReturn(TestData.DOG_BUDDY);
 
     // Act & Assert
     StepVerifier.create(dogService.getDogs())
@@ -53,6 +53,11 @@ class DogServiceTest {
                 .build())
         .expectComplete()
         .verify();
+
+    // Verify interactions
+    verify(dogRepository, times(1)).findAll();
+    verify(dogImageRepository, times(1)).findAllByDogId(TestData.DOG_ENTITY_BUDDY.getId());
+    verify(dogMapper, times(1)).mapToModel(TestData.DOG_ENTITY_BUDDY);
   }
 
   @Test
@@ -62,7 +67,6 @@ class DogServiceTest {
         .thenReturn(Mono.just(TestData.DOG_ENTITY_BUDDY));
     when(dogImageRepository.findAllByDogId(TestData.DOG_ENTITY_BUDDY.getId()))
         .thenReturn(Flux.fromIterable(List.of(TestData.DOG_IMAGE_ENTITY)));
-    when(dogMapper.mapToModel(TestData.DOG_ENTITY_BUDDY)).thenReturn(TestData.DOG_BUDDY);
 
     // Act & Assert
     StepVerifier.create(dogService.getDog(TestData.DOG_ENTITY_BUDDY.getId().toString()))
@@ -72,6 +76,11 @@ class DogServiceTest {
                 .build())
         .expectComplete()
         .verify();
+
+    // Verify interactions
+    verify(dogRepository, times(1)).findById(TestData.DOG_ENTITY_BUDDY.getId());
+    verify(dogImageRepository, times(1)).findAllByDogId(TestData.DOG_ENTITY_BUDDY.getId());
+    verify(dogMapper, times(1)).mapToModel(TestData.DOG_ENTITY_BUDDY);
   }
 
   @Test
@@ -91,9 +100,7 @@ class DogServiceTest {
 
     String mockUrl = "http://mockstorage.com/test-image.jpg";
 
-    when(dogMapper.mapToEntity(TestData.DOG_BUDDY)).thenReturn(TestData.DOG_ENTITY_BUDDY);
     when(dogRepository.save(any(DogEntity.class))).thenReturn(Mono.just(TestData.DOG_ENTITY_BUDDY));
-    when(dogMapper.mapToModel(TestData.DOG_ENTITY_BUDDY)).thenReturn(TestData.DOG_BUDDY);
     when(blobStorageService.uploadToBlob(anyString(), anyString(), any(InputStream.class)))
         .thenReturn(Mono.just(mockUrl));
 
@@ -104,6 +111,9 @@ class DogServiceTest {
         .verify();
 
     // Verify interactions
+    verify(dogMapper, times(1)).mapToEntity(TestData.DOG_BUDDY);
+    verify(dogRepository, times(1)).save(any(DogEntity.class));
+    verify(dogMapper, times(1)).mapToModel(TestData.DOG_ENTITY_BUDDY);
     verify(blobStorageService, times(1)).uploadToBlob(any(), anyString(), any(InputStream.class));
   }
 
@@ -158,20 +168,47 @@ class DogServiceTest {
     StepVerifier.create(dogService.deleteDogImage(UUID.randomUUID().toString()))
         .expectComplete()
         .verify();
+
+    // Verify interactions
+    verify(dogImageRepository, times(1)).findById(any(UUID.class));
+    verify(dogImageRepository, times(1)).delete(dogImageEntity);
+    verify(blobStorageService, times(1)).deleteBlob(null, dogImageEntity.getUri());
   }
 
   @Test
   void updateDogInformation_returns_expected_dog_and_200() {
     UUID dogId = UUID.randomUUID();
 
-    Dog dog = Dog.builder()
-        .id(dogId)
-        .name("Babu")
-        .age(2)
-        .description("A good dog!")
-        .breed("Mix")
-        .build();
+    var dogEntity =
+        DogEntity.builder()
+            .id(dogId)
+            .name("Babu")
+            .age(2)
+            .description("A good dog!")
+            .breed("Mix")
+            .build();
 
-    when(dogRepository.findById(dogId)).thenReturn(Mono.just(new DogEntity()));
+    Dog dog = Dog.builder().name("Babu").age(4).description("A good dog!").breed("Mix").build();
+
+    when(dogRepository.findById(dogId)).thenReturn(Mono.just(dogEntity));
+    when(dogRepository.save(any(DogEntity.class)))
+        .thenAnswer(invocation -> Mono.just((DogEntity) invocation.getArgument(0)));
+
+    StepVerifier.create(dogService.updateDogInformation(dogId, dog))
+        .expectNext(
+            Dog.builder()
+                .id(dogId)
+                .name("Babu")
+                .age(4)
+                .description("A good dog!")
+                .breed("Mix")
+                .build())
+        .expectComplete()
+        .verify();
+
+    // Verify interactions
+    verify(dogRepository, times(1)).findById(dogId);
+    verify(dogRepository, times(1)).save(any(DogEntity.class));
+    verify(dogMapper, times(1)).mapToModel(any(DogEntity.class));
   }
 }

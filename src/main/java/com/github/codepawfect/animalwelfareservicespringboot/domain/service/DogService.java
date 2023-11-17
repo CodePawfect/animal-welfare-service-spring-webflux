@@ -1,10 +1,5 @@
 package com.github.codepawfect.animalwelfareservicespringboot.domain.service;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 import com.github.codepawfect.animalwelfareservicespringboot.core.service.BlobStorageService;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.DogImageRepository;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.DogRepository;
@@ -12,6 +7,11 @@ import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.m
 import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.model.DogImageEntity;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.service.mapper.DogMapper;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.service.model.Dog;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,9 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-/**
- * Service class for managing dogs and their images.
- */
+/** Service class for managing dogs and their images. */
 @Slf4j
 @RequiredArgsConstructor
 @Service
@@ -90,8 +88,8 @@ public class DogService {
   /**
    * Add a new dog along with its images.
    *
-   * @param dog           The Dog object to be added.
-   * @param filePartFlux  A Flux of FilePart objects representing image files.
+   * @param dog The Dog object to be added.
+   * @param filePartFlux A Flux of FilePart objects representing image files.
    * @return A Mono containing the added Dog object with image URIs.
    */
   public Mono<Dog> addDog(Dog dog, Flux<FilePart> filePartFlux) {
@@ -162,26 +160,38 @@ public class DogService {
    * @return A Mono that completes when the deletion is finished, emitting no result.
    */
   public Mono<Void> deleteDogImage(String imageId) {
-     return dogImageRepository.findById(UUID.fromString(imageId))
-         .flatMap(dogImageEntity -> dogImageRepository.delete(dogImageEntity)
-             .then(blobStorageService.deleteBlob(this.containerName, dogImageEntity.getUri())));
+    return dogImageRepository
+        .findById(UUID.fromString(imageId))
+        .flatMap(
+            dogImageEntity ->
+                dogImageRepository
+                    .delete(dogImageEntity)
+                    .then(
+                        blobStorageService.deleteBlob(
+                            this.containerName, dogImageEntity.getUri())));
   }
 
   /**
    * Update an existing dog's information by its ID.
    *
    * @param dogId The UUID of the dog to be updated.
-   * @param dog   The updated Dog object with new information.
+   * @param dog The updated Dog object with new information.
    * @return A Mono containing the updated Dog object.
    */
   public Mono<Dog> updateDogInformation(UUID dogId, Dog dog) {
-    return dogRepository.findById(dogId)
-        .map(dogEntity -> dogEntity.toBuilder()
-            .name(dog.getName() == null ? dogEntity.getName() : dog.getName())
-            .description(dog.getDescription() == null ? dogEntity.getDescription() : dog.getDescription())
-            .age(dog.getAge() == null ? dogEntity.getAge() : dog.getAge())
-            .breed(dog.getBreed() == null ? dogEntity.getBreed() : dog.getBreed())
-            .build())
+    return dogRepository
+        .findById(dogId)
+        .map(
+            dogEntity ->
+                dogEntity.toBuilder()
+                    .name(dog.getName() == null ? dogEntity.getName() : dog.getName())
+                    .description(
+                        dog.getDescription() == null
+                            ? dogEntity.getDescription()
+                            : dog.getDescription())
+                    .age(dog.getAge() == null ? dogEntity.getAge() : dog.getAge())
+                    .breed(dog.getBreed() == null ? dogEntity.getBreed() : dog.getBreed())
+                    .build())
         .flatMap(dogRepository::save)
         .map(dogMapper::mapToModel);
   }
