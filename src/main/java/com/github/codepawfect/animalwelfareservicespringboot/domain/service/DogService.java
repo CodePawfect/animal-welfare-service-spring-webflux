@@ -23,6 +23,9 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+/**
+ * Service class for managing dogs and their images.
+ */
 @Slf4j
 @RequiredArgsConstructor
 @Service
@@ -39,6 +42,11 @@ public class DogService {
   private static final Set<String> SUPPORTED_IMAGE_CONTENT_TYPES =
       Set.of(MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE);
 
+  /**
+   * Retrieve a list of all dogs with their associated images.
+   *
+   * @return A Flux of Dog objects with image URIs.
+   */
   public Flux<Dog> getDogs() {
     return dogRepository
         .findAll()
@@ -56,6 +64,12 @@ public class DogService {
                         }));
   }
 
+  /**
+   * Retrieve a specific dog by its ID along with its associated images.
+   *
+   * @param id The UUID of the dog to retrieve.
+   * @return A Mono containing the Dog object with image URIs, or empty if not found.
+   */
   public Mono<Dog> getDog(String id) {
     return dogRepository
         .findById(UUID.fromString(id))
@@ -73,6 +87,13 @@ public class DogService {
                         }));
   }
 
+  /**
+   * Add a new dog along with its images.
+   *
+   * @param dog           The Dog object to be added.
+   * @param filePartFlux  A Flux of FilePart objects representing image files.
+   * @return A Mono containing the added Dog object with image URIs.
+   */
   public Mono<Dog> addDog(Dog dog, Flux<FilePart> filePartFlux) {
     var dogEntity = dogMapper.mapToEntity(dog);
     dogEntity.setId(UUID.randomUUID());
@@ -112,6 +133,12 @@ public class DogService {
             });
   }
 
+  /**
+   * Delete a dog and its associated images by ID.
+   *
+   * @param id The UUID of the dog to be deleted.
+   * @return A Mono indicating the completion of the deletion operation.
+   */
   @Transactional
   public Mono<Void> deleteDog(String id) {
     return dogRepository
@@ -126,6 +153,37 @@ public class DogService {
                   .then(blobStorageService.deleteBlobs(this.containerName, extractBlobNames(uris)))
                   .then(dogRepository.deleteById(dogEntity.getId()));
             });
+  }
+
+  /**
+   * Deletes a dog image from the repository and associated blob storage.
+   *
+   * @param imageId The unique identifier of the dog image to delete.
+   * @return A Mono that completes when the deletion is finished, emitting no result.
+   */
+  public Mono<Void> deleteDogImage(String imageId) {
+     return dogImageRepository.findById(UUID.fromString(imageId))
+         .flatMap(dogImageEntity -> dogImageRepository.delete(dogImageEntity)
+             .then(blobStorageService.deleteBlob(this.containerName, dogImageEntity.getUri())));
+  }
+
+  /**
+   * Update an existing dog's information by its ID.
+   *
+   * @param dogId The UUID of the dog to be updated.
+   * @param dog   The updated Dog object with new information.
+   * @return A Mono containing the updated Dog object.
+   */
+  public Mono<Dog> updateDogInformation(UUID dogId, Dog dog) {
+    return dogRepository.findById(dogId)
+        .map(dogEntity -> dogEntity.toBuilder()
+            .name(dog.getName() == null ? dogEntity.getName() : dog.getName())
+            .description(dog.getDescription() == null ? dogEntity.getDescription() : dog.getDescription())
+            .age(dog.getAge() == null ? dogEntity.getAge() : dog.getAge())
+            .breed(dog.getBreed() == null ? dogEntity.getBreed() : dog.getBreed())
+            .build())
+        .flatMap(dogRepository::save)
+        .map(dogMapper::mapToModel);
   }
 
   private Flux<String> extractBlobNames(Flux<String> uris) {

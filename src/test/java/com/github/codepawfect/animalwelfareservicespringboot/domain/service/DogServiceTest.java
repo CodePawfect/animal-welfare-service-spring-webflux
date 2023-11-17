@@ -10,6 +10,7 @@ import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.D
 import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.model.DogEntity;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.model.DogImageEntity;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.service.mapper.DogMapper;
+import com.github.codepawfect.animalwelfareservicespringboot.domain.service.model.Dog;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -143,5 +144,34 @@ class DogServiceTest {
     verify(dogImageRepository, never()).findAllByDogId(any(UUID.class));
     verify(blobStorageService, never()).deleteBlob(any(), anyString());
     verify(dogImageRepository, never()).delete(any(DogImageEntity.class));
+  }
+
+  @Test
+  void deleteDogImage_returns_204() {
+    var dogImageEntity = new DogImageEntity();
+    dogImageEntity.setUri(UUID.randomUUID() + "dog.png");
+
+    when(dogImageRepository.findById(any(UUID.class))).thenReturn(Mono.just(dogImageEntity));
+    when(dogImageRepository.delete(dogImageEntity)).thenReturn(Mono.empty());
+    when(blobStorageService.deleteBlob(null, dogImageEntity.getUri())).thenReturn(Mono.empty());
+
+    StepVerifier.create(dogService.deleteDogImage(UUID.randomUUID().toString()))
+        .expectComplete()
+        .verify();
+  }
+
+  @Test
+  void updateDogInformation_returns_expected_dog_and_200() {
+    UUID dogId = UUID.randomUUID();
+
+    Dog dog = Dog.builder()
+        .id(dogId)
+        .name("Babu")
+        .age(2)
+        .description("A good dog!")
+        .breed("Mix")
+        .build();
+
+    when(dogRepository.findById(dogId)).thenReturn(Mono.just(new DogEntity()));
   }
 }
