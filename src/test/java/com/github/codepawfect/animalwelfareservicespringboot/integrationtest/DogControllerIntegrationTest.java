@@ -96,6 +96,28 @@ class DogControllerIntegrationTest extends AbstractIntegrationTest {
         .body("imageUris[0]", notNullValue());
   }
 
-  // TODO: add deleteDog integration-test
   // TODO: add 401 integration-tests for secured endpoints
+  @Test
+  @WithMockUser(
+      username = "user",
+      roles = {"ADMIN"})
+  void deleteDog_returns_201_with_expected_dog() {
+    given()
+        .when()
+        .delete("v1/dog/" + dogEntity.getId())
+        .then()
+        .statusCode(204)
+        .log()
+        .ifValidationFails();
+  }
+
+  @Test
+  void createDog_returns_401() {
+    given().when().post("v1/dog").then().statusCode(401).log().ifValidationFails();
+  }
+
+  @Test
+  void deleteDog_returns_401() {
+    given().when().delete("v1/dog/123").then().statusCode(401).log().ifValidationFails();
+  }
 }

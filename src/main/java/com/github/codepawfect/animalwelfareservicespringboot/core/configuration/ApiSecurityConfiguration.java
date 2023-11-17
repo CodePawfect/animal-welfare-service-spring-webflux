@@ -27,6 +27,8 @@ public class ApiSecurityConfiguration {
   @Value("${management.password}")
   private String password;
 
+  private static final String ADMIN_ROLE = "ADMIN";
+
   @Bean
   SecurityWebFilterChain springWebFilterChain(
       ServerHttpSecurity http,
@@ -45,7 +47,9 @@ public class ApiSecurityConfiguration {
                     .pathMatchers(HttpMethod.GET, "/v1/dog/{id}")
                     .permitAll()
                     .pathMatchers(HttpMethod.POST, "/v1/dog")
-                    .hasRole("ADMIN")
+                    .hasRole(ADMIN_ROLE)
+                    .pathMatchers(HttpMethod.DELETE, "/v1/dog/{id}")
+                    .hasRole(ADMIN_ROLE)
                     .pathMatchers("/api-documentation/**")
                     .permitAll()
                     .pathMatchers("/login")
@@ -66,7 +70,7 @@ public class ApiSecurityConfiguration {
         User.builder()
             .username(username)
             .password(passwordEncoder().encode(password))
-            .roles("ADMIN")
+            .roles(ADMIN_ROLE)
             .build();
     return new MapReactiveUserDetailsService(adminUser);
   }
