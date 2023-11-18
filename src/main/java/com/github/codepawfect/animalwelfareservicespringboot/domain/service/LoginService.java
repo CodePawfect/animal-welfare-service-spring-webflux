@@ -8,6 +8,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+/** Service responsible for user authentication and token generation. */
 @RequiredArgsConstructor
 @Service
 public class LoginService {
@@ -15,6 +16,14 @@ public class LoginService {
   private final JwtService jwtService;
   private final PasswordEncoder passwordEncoder;
 
+  /**
+   * Authenticate a user based on their credentials (username and password).
+   *
+   * @param username The username of the user to authenticate.
+   * @param password The password of the user to authenticate.
+   * @return A Mono that emits a JWT token upon successful authentication, or emits an error if
+   *     authentication fails.
+   */
   public Mono<String> authenticate(String username, String password) {
     return reactiveUserDetailsService
         .findByUsername(username)
