@@ -1,13 +1,12 @@
 package com.github.codepawfect.animalwelfareservicespringboot.core.jwt;
 
+import java.time.Instant;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
-import java.time.Instant;
 import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -36,10 +35,6 @@ public class JwtService {
 
   public String getUsername(String token) {
     return jwtParser.parseClaimsJws(token).getBody().getSubject();
-  }
-
-  public boolean validate(UserDetails user, String token) {
-    return user.getUsername().equals(getUsername(token)) && !isExpired(token);
   }
 
   public boolean isExpired(String token) {

@@ -62,12 +62,17 @@ public class DogController {
     return dogService.deleteDogImage(id).then(Mono.just(ResponseEntity.noContent().build()));
   }
 
-  @Operation(summary = "Update a dog", description = "Update a dog", tags = "dog")
+  @Operation(
+      summary = "Update dog information",
+      description = "Update dog information",
+      tags = "dog")
   @PutMapping("/v1/dog/{id}")
-  public Mono<ResponseEntity<DogResource>> updateDog(
+  public Mono<ResponseEntity<DogResource>> updateDogInformation(
       @PathVariable String id,
-      @RequestPart("dogCreateResource") DogCreateResource dogCreateResource,
-      @RequestPart("files") Flux<FilePart> filePartFlux) {
-    return null;
+      @RequestPart("dogCreateResource") DogCreateResource dogCreateResource) {
+    return dogService
+        .updateDogInformation(id, dogResourceMapper.map(dogCreateResource))
+        .map(dogResourceMapper::map)
+        .map(ResponseEntity::ok);
   }
 }

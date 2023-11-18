@@ -111,6 +111,32 @@ class DogControllerIntegrationTest extends AbstractIntegrationTest {
   }
 
   @Test
+  @WithMockUser(
+      username = "user",
+      roles = {"ADMIN"})
+  void deleteDogImage_returns_201() {
+    // TODO: implement test
+  }
+
+  @Test
+  @WithMockUser(
+      username = "user",
+      roles = {"ADMIN"})
+  void updateDogInformation_returns_201() {
+    // TODO: implement test
+  }
+
+  @Test
+  void deleteDogImage_returns_401() {
+    // TODO: implement test
+  }
+
+  @Test
+  void updateDogInformation_returns_401() {
+    // TODO: implement test
+  }
+
+  @Test
   void createDog_returns_401() {
     given().when().post("v1/dog").then().statusCode(401).log().ifValidationFails();
   }

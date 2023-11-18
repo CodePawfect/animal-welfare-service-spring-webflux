@@ -176,7 +176,7 @@ class DogServiceTest {
         .thenAnswer(invocation -> Mono.just((DogEntity) invocation.getArgument(0)));
 
     // Act & Assert
-    StepVerifier.create(dogService.updateDogInformation(dogId, dog))
+    StepVerifier.create(dogService.updateDogInformation(dogId.toString(), dog))
         .expectNext(
             Dog.builder()
                 .id(dogId)
@@ -202,11 +202,11 @@ class DogServiceTest {
         DogImageEntity.builder().id(dogId).uri(UUID.randomUUID() + "dog.png").build();
 
     when(dogImageRepository.findById(dogId)).thenReturn(Mono.just(dogImageEntity));
-    when(dogImageRepository.delete(dogImageEntity).thenReturn(Mono.empty()));
+    when(dogImageRepository.delete(dogImageEntity)).thenReturn(Mono.empty());
     when(blobStorageService.deleteBlob(null, dogImageEntity.getUri())).thenReturn(Mono.empty());
 
     // Act & Assert
-    StepVerifier.create(dogService.deleteDog(dogId.toString())).expectComplete().verify();
+    StepVerifier.create(dogService.deleteDogImage(dogId.toString())).expectComplete().verify();
 
     // Verify interactions
     verify(dogImageRepository, times(1)).findById(dogId);

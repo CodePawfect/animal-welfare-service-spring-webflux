@@ -178,9 +178,9 @@ public class DogService {
    * @param dog The updated Dog object with new information.
    * @return A Mono containing the updated Dog object.
    */
-  public Mono<Dog> updateDogInformation(UUID dogId, Dog dog) {
+  public Mono<Dog> updateDogInformation(String dogId, Dog dog) {
     return dogRepository
-        .findById(dogId)
+        .findById(UUID.fromString(dogId))
         .map(
             dogEntity ->
                 dogEntity.toBuilder()
