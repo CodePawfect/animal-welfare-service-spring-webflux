@@ -38,6 +38,7 @@ public class ApiSecurityConfiguration {
     jwtFilter.setServerAuthenticationConverter(jwtAuthenticationConverter);
 
     http.csrf(ServerHttpSecurity.CsrfSpec::disable)
+            .cors(ServerHttpSecurity.CorsSpec::disable)
         .addFilterAt(jwtFilter, SecurityWebFiltersOrder.AUTHENTICATION)
         .authorizeExchange(
             authorize ->
