@@ -1,9 +1,8 @@
 package com.github.codepawfect.animalwelfareservicespringboot.domain.service;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
-
+import java.io.InputStream;
+import java.util.List;
+import java.util.UUID;
 import com.github.codepawfect.animalwelfareservicespringboot.core.service.BlobStorageService;
 import com.github.codepawfect.animalwelfareservicespringboot.data.TestData;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.DogImageRepository;
@@ -12,9 +11,6 @@ import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.m
 import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.model.DogImageEntity;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.service.mapper.DogMapper;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.service.model.Dog;
-import java.io.InputStream;
-import java.util.List;
-import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -29,6 +25,10 @@ import org.springframework.http.codec.multipart.FilePart;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class DogServiceTest {
@@ -97,7 +97,6 @@ class DogServiceTest {
     when(mockFile.content()).thenReturn(dataBufferFlux);
 
     Flux<FilePart> filePartsFlux = Flux.just(mockFile);
-
     String mockUrl = "http://mockstorage.com/test-image.jpg";
 
     when(dogRepository.save(any(DogEntity.class))).thenReturn(Mono.just(TestData.DOG_ENTITY_BUDDY));
@@ -157,26 +156,8 @@ class DogServiceTest {
   }
 
   @Test
-  void deleteDogImage_returns_204() {
-    var dogImageEntity = new DogImageEntity();
-    dogImageEntity.setUri(UUID.randomUUID() + "dog.png");
-
-    when(dogImageRepository.findById(any(UUID.class))).thenReturn(Mono.just(dogImageEntity));
-    when(dogImageRepository.delete(dogImageEntity)).thenReturn(Mono.empty());
-    when(blobStorageService.deleteBlob(null, dogImageEntity.getUri())).thenReturn(Mono.empty());
-
-    StepVerifier.create(dogService.deleteDogImage(UUID.randomUUID().toString()))
-        .expectComplete()
-        .verify();
-
-    // Verify interactions
-    verify(dogImageRepository, times(1)).findById(any(UUID.class));
-    verify(dogImageRepository, times(1)).delete(dogImageEntity);
-    verify(blobStorageService, times(1)).deleteBlob(null, dogImageEntity.getUri());
-  }
-
-  @Test
   void updateDogInformation_returns_expected_dog_and_200() {
+    // Arrange
     UUID dogId = UUID.randomUUID();
 
     var dogEntity =
@@ -194,6 +175,7 @@ class DogServiceTest {
     when(dogRepository.save(any(DogEntity.class)))
         .thenAnswer(invocation -> Mono.just((DogEntity) invocation.getArgument(0)));
 
+    // Act & Assert
     StepVerifier.create(dogService.updateDogInformation(dogId, dog))
         .expectNext(
             Dog.builder()
@@ -210,5 +192,25 @@ class DogServiceTest {
     verify(dogRepository, times(1)).findById(dogId);
     verify(dogRepository, times(1)).save(any(DogEntity.class));
     verify(dogMapper, times(1)).mapToModel(any(DogEntity.class));
+  }
+
+  @Test
+  void deleteDogImage() {
+    // Arrange
+    var dogId = UUID.randomUUID();
+    var dogImageEntity =
+        DogImageEntity.builder().id(dogId).uri(UUID.randomUUID() + "dog.png").build();
+
+    when(dogImageRepository.findById(dogId)).thenReturn(Mono.just(dogImageEntity));
+    when(dogImageRepository.delete(dogImageEntity).thenReturn(Mono.empty()));
+    when(blobStorageService.deleteBlob(null, dogImageEntity.getUri())).thenReturn(Mono.empty());
+
+    // Act & Assert
+    StepVerifier.create(dogService.deleteDog(dogId.toString())).expectComplete().verify();
+
+    // Verify interactions
+    verify(dogImageRepository, times(1)).findById(dogId);
+    verify(dogImageRepository, times(1)).delete(dogImageEntity);
+    verify(blobStorageService, times(1)).deleteBlob(null, dogImageEntity.getUri());
   }
 }
