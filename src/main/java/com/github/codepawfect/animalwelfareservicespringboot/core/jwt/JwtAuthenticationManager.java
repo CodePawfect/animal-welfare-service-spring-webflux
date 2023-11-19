@@ -1,6 +1,7 @@
 package com.github.codepawfect.animalwelfareservicespringboot.core.jwt;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -34,6 +35,6 @@ public class JwtAuthenticationManager implements ReactiveAuthenticationManager {
                                             userDetails.getPassword(),
                                             userDetails.getAuthorities())))
                     .cast(Authentication.class))
-        .onErrorResume(e -> Mono.empty());
+        .onErrorResume(e -> Mono.error(new BadCredentialsException("invalid token")));
   }
 }

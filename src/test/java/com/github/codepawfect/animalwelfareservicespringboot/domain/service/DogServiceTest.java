@@ -1,8 +1,9 @@
 package com.github.codepawfect.animalwelfareservicespringboot.domain.service;
 
-import java.io.InputStream;
-import java.util.List;
-import java.util.UUID;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+
 import com.github.codepawfect.animalwelfareservicespringboot.core.service.BlobStorageService;
 import com.github.codepawfect.animalwelfareservicespringboot.data.TestData;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.DogImageRepository;
@@ -11,6 +12,9 @@ import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.m
 import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.model.DogImageEntity;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.service.mapper.DogMapper;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.service.model.Dog;
+import java.io.InputStream;
+import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -25,10 +29,6 @@ import org.springframework.http.codec.multipart.FilePart;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class DogServiceTest {

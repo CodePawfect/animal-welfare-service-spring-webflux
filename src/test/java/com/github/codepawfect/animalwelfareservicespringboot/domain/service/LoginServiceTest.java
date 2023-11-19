@@ -1,7 +1,9 @@
 package com.github.codepawfect.animalwelfareservicespringboot.domain.service;
 
-import java.util.Collection;
+import static org.mockito.Mockito.*;
+
 import com.github.codepawfect.animalwelfareservicespringboot.core.jwt.JwtService;
+import java.util.Collection;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -14,8 +16,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class LoginServiceTest {
