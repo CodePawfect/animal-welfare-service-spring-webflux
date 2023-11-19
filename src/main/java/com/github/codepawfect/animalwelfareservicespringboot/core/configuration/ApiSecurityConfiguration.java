@@ -2,6 +2,7 @@ package com.github.codepawfect.animalwelfareservicespringboot.core.configuration
 
 import com.github.codepawfect.animalwelfareservicespringboot.core.jwt.JwtAuthenticationConverter;
 import com.github.codepawfect.animalwelfareservicespringboot.core.jwt.JwtAuthenticationManager;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.AuthenticationWebFilter;
 
+@RequiredArgsConstructor
 @EnableWebFluxSecurity
 @Configuration
 public class ApiSecurityConfiguration {
@@ -43,22 +45,21 @@ public class ApiSecurityConfiguration {
         .authorizeExchange(
             authorize ->
                 authorize
-                    .pathMatchers(HttpMethod.GET, "/v1/dogs")
+                    // Grouping paths that are accessible to everyone
+                    .pathMatchers(HttpMethod.GET, "/v1/dogs", "/v1/dog/{id}")
                     .permitAll()
-                    .pathMatchers(HttpMethod.GET, "/v1/dog/{id}")
+                    .pathMatchers("/api-documentation/**", "/login")
                     .permitAll()
+
+                    // Grouping paths that require ADMIN_ROLE
                     .pathMatchers(HttpMethod.POST, "/v1/dog")
                     .hasRole(ADMIN_ROLE)
-                    .pathMatchers(HttpMethod.DELETE, "/v1/dog/{id}")
-                    .hasRole(ADMIN_ROLE)
-                    .pathMatchers(HttpMethod.DELETE, "/v1/dog/image/{id}")
+                    .pathMatchers(HttpMethod.DELETE, "/v1/dog/{id}", "/v1/dog/image/{id}")
                     .hasRole(ADMIN_ROLE)
                     .pathMatchers(HttpMethod.PUT, "/v1/dog/{id}")
                     .hasRole(ADMIN_ROLE)
-                    .pathMatchers("/api-documentation/**")
-                    .permitAll()
-                    .pathMatchers("/login")
-                    .permitAll()
+
+                    // Default rule for any other requests
                     .anyExchange()
                     .denyAll());
     return http.build();

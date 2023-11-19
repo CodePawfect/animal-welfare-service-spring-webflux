@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.codepawfect.animalwelfareservicespringboot.core.jwt.JwtService;
 import com.github.codepawfect.animalwelfareservicespringboot.data.TestData;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.controller.model.DogCreateResource;
 import com.github.codepawfect.animalwelfareservicespringboot.domain.repository.DogImageRepository;
@@ -27,6 +28,7 @@ class DogControllerIntegrationTest extends AbstractIntegrationTest {
 
   @Autowired private DogRepository dogRepository;
   @Autowired private DogImageRepository dogImageRepository;
+  @Autowired private JwtService jwtService;
 
   private DogEntity dogEntity;
 
@@ -67,10 +69,9 @@ class DogControllerIntegrationTest extends AbstractIntegrationTest {
   }
 
   @Test
-  @WithMockUser(
-      username = "user",
-      roles = {"ADMIN"})
   void createDog_returns_201_with_expected_dog() throws IOException {
+    String token = jwtService.generateToken("default_user");
+
     byte[] sampleImage1 = Files.readAllBytes(Paths.get("src/test/resources/test.jpg"));
     byte[] sampleImage2 = Files.readAllBytes(Paths.get("src/test/resources/test.jpg"));
 
@@ -78,6 +79,7 @@ class DogControllerIntegrationTest extends AbstractIntegrationTest {
     String dogCreateResourceJson = new ObjectMapper().writeValueAsString(dogCreateResource);
 
     given()
+        .header("Authorization", "Bearer " + token)
         .contentType(MULTIPART_FORM_DATA_VALUE)
         .multiPart("dogCreateResource", dogCreateResourceJson, MediaType.APPLICATION_JSON_VALUE)
         .multiPart("files", "test.jpg", sampleImage1, "image/jpeg")
@@ -97,12 +99,12 @@ class DogControllerIntegrationTest extends AbstractIntegrationTest {
   }
 
   @Test
-  @WithMockUser(
-      username = "user",
-      roles = {"ADMIN"})
   void deleteDog_returns_201_with_expected_dog() {
+    String token = jwtService.generateToken("default_user");
+
     given()
         .when()
+        .header("Authorization", "Bearer " + token)
         .delete("v1/dog/" + dogEntity.getId())
         .then()
         .statusCode(204)
@@ -111,9 +113,6 @@ class DogControllerIntegrationTest extends AbstractIntegrationTest {
   }
 
   @Test
-  @WithMockUser(
-      username = "user",
-      roles = {"ADMIN"})
   void deleteDogImage_returns_201() {
     // TODO: implement test
   }
