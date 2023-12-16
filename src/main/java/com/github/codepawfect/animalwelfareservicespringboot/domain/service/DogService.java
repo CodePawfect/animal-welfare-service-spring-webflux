@@ -158,6 +158,7 @@ public class DogService {
    * @param imageId The unique identifier of the dog image to delete.
    * @return A Mono that completes when the deletion is finished, emitting no result.
    */
+  @Transactional
   public Mono<Void> deleteDogImage(String imageId) {
     return dogImageRepository
         .findById(UUID.fromString(imageId))
