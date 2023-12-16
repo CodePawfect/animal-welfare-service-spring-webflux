@@ -12,9 +12,11 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.multipart.FilePart;
@@ -22,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
 
 /** Service class for managing dogs and their images. */
 @Slf4j
@@ -46,20 +49,20 @@ public class DogService {
    * @return A Flux of Dog objects with image URIs.
    */
   public Flux<Dog> getDogs() {
-    return dogRepository
-        .findAll()
-        .flatMap(
-            dogEntity ->
-                dogImageRepository
-                    .findAllByDogId(dogEntity.getId())
-                    .collectList()
-                    .map(
-                        dogImageEntities -> {
-                          Dog dog = dogMapper.mapToModel(dogEntity);
-                          dog.setImageUris(
-                              dogImageEntities.stream().map(DogImageEntity::getUri).toList());
-                          return dog;
-                        }));
+    return dogRepository.findAll().flatMap(findImagesAssociatedWithDogEntity());
+  }
+
+  private Function<DogEntity, Mono<Dog>> findImagesAssociatedWithDogEntity() {
+    return dogEntity ->
+        dogImageRepository
+            .findAllByDogId(dogEntity.getId())
+            .collectList()
+            .map(
+                dogImageEntities -> {
+                  Dog dog = dogMapper.mapToModel(dogEntity);
+                  dog.setImageUris(dogImageEntities.stream().map(DogImageEntity::getUri).toList());
+                  return dog;
+                });
   }
 
   /**
@@ -69,20 +72,7 @@ public class DogService {
    * @return A Mono containing the Dog object with image URIs, or empty if not found.
    */
   public Mono<Dog> getDog(String id) {
-    return dogRepository
-        .findById(UUID.fromString(id))
-        .flatMap(
-            dogEntity ->
-                dogImageRepository
-                    .findAllByDogId(dogEntity.getId())
-                    .collectList()
-                    .map(
-                        dogImageEntities -> {
-                          Dog dog = dogMapper.mapToModel(dogEntity);
-                          dog.setImageUris(
-                              dogImageEntities.stream().map(DogImageEntity::getUri).toList());
-                          return dog;
-                        }));
+    return dogRepository.findById(UUID.fromString(id)).flatMap(findImagesAssociatedWithDogEntity());
   }
 
   /**
@@ -101,7 +91,8 @@ public class DogService {
         .switchIfEmpty(
             Mono.error(
                 new IllegalArgumentException(
-                    "No supported image files found in request. Supported image types are JPEG and PNG.")))
+                    "No supported image files found in request. Supported image types are: "
+                        + SUPPORTED_IMAGE_CONTENT_TYPES)))
         .flatMap(this::saveToBlobStorage)
         .onErrorResume(
             e -> {
@@ -109,26 +100,31 @@ public class DogService {
               return Mono.empty();
             })
         .collectList()
-        .flatMap(
-            blobUrls -> {
-              List<Mono<DogImageEntity>> dogImageEntities =
-                  blobUrls.stream()
-                      .map(blobUrl -> saveDogImage(dogEntity.getId(), blobUrl))
-                      .toList();
+        .flatMap(saveDogAndAssociatedImages(dogEntity))
+        .flatMap(mapToModelAndSetImageUris());
+  }
 
-              return Mono.zip(
-                  dogRepository.save(dogEntity), Flux.merge(dogImageEntities).collectList());
-            })
-        .flatMap(
-            tuple -> {
-              DogEntity savedDogEntity = tuple.getT1();
-              List<DogImageEntity> savedImageUris = tuple.getT2();
+  private Function<Tuple2<DogEntity, List<DogImageEntity>>, Mono<? extends Dog>>
+      mapToModelAndSetImageUris() {
+    return tuple -> {
+      DogEntity savedDogEntity = tuple.getT1();
+      List<DogImageEntity> savedImageUris = tuple.getT2();
 
-              Dog dogModel = dogMapper.mapToModel(savedDogEntity);
-              dogModel.setImageUris(savedImageUris.stream().map(DogImageEntity::getUri).toList());
+      Dog dogModel = dogMapper.mapToModel(savedDogEntity);
+      dogModel.setImageUris(savedImageUris.stream().map(DogImageEntity::getUri).toList());
 
-              return Mono.just(dogModel);
-            });
+      return Mono.just(dogModel);
+    };
+  }
+
+  private Function<List<String>, Mono<? extends Tuple2<DogEntity, List<DogImageEntity>>>>
+      saveDogAndAssociatedImages(DogEntity dogEntity) {
+    return blobUrls -> {
+      List<Mono<DogImageEntity>> dogImageEntities =
+          blobUrls.stream().map(blobUrl -> saveDogImage(dogEntity.getId(), blobUrl)).toList();
+
+      return Mono.zip(dogRepository.save(dogEntity), Flux.merge(dogImageEntities).collectList());
+    };
   }
 
   /**
@@ -142,15 +138,18 @@ public class DogService {
     return dogRepository
         .findById(UUID.fromString(id))
         .switchIfEmpty(Mono.error(new IllegalStateException("Dog not found with ID: " + id)))
-        .flatMap(
-            dogEntity -> {
-              Flux<String> uris =
-                  dogImageRepository.findAllByDogId(dogEntity.getId()).map(DogImageEntity::getUri);
-              return dogImageRepository
-                  .deleteById(dogEntity.getId())
-                  .then(blobStorageService.deleteBlobs(this.containerName, extractBlobNames(uris)))
-                  .then(dogRepository.deleteById(dogEntity.getId()));
-            });
+        .flatMap(deleteDogAndAssociatedImages());
+  }
+
+  private Function<DogEntity, Mono<? extends Void>> deleteDogAndAssociatedImages() {
+    return dogEntity -> {
+      Flux<String> uris =
+          dogImageRepository.findAllByDogId(dogEntity.getId()).map(DogImageEntity::getUri);
+      return dogImageRepository
+          .deleteById(dogEntity.getId())
+          .then(blobStorageService.deleteBlobs(this.containerName, extractBlobNames(uris)))
+          .then(dogRepository.deleteById(dogEntity.getId()));
+    };
   }
 
   /**
@@ -162,13 +161,14 @@ public class DogService {
   public Mono<Void> deleteDogImage(String imageId) {
     return dogImageRepository
         .findById(UUID.fromString(imageId))
-        .flatMap(
-            dogImageEntity ->
-                dogImageRepository
-                    .delete(dogImageEntity)
-                    .then(
-                        blobStorageService.deleteBlob(
-                            this.containerName, dogImageEntity.getUri())));
+        .flatMap(deleteDogImageAndAssociatedBlob());
+  }
+
+  private Function<DogImageEntity, Mono<? extends Void>> deleteDogImageAndAssociatedBlob() {
+    return dogImageEntity ->
+        dogImageRepository
+            .delete(dogImageEntity)
+            .then(blobStorageService.deleteBlob(this.containerName, dogImageEntity.getUri()));
   }
 
   /**
@@ -209,15 +209,18 @@ public class DogService {
     String blobName = UUID.randomUUID() + "-" + file.filename();
 
     return DataBufferUtils.join(file.content())
-        .flatMap(
-            dataBuffer -> {
-              InputStream inputStream = dataBuffer.asInputStream(true);
-              return blobStorageService
-                  .uploadToBlob(containerName, blobName, inputStream)
-                  .doFinally(signalType -> DataBufferUtils.release(dataBuffer));
-            })
+        .flatMap(uploadFileToBlob(blobName))
         .onErrorMap(
             IOException.class, e -> new Exception("Failed to upload file: " + file.filename(), e));
+  }
+
+  private Function<DataBuffer, Mono<? extends String>> uploadFileToBlob(String blobName) {
+    return dataBuffer -> {
+      InputStream inputStream = dataBuffer.asInputStream(true);
+      return blobStorageService
+          .uploadToBlob(containerName, blobName, inputStream)
+          .doFinally(signalType -> DataBufferUtils.release(dataBuffer));
+    };
   }
 
   private boolean isSupportedImage(FilePart file) {
