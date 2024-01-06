@@ -9,6 +9,7 @@ import com.github.codepawfect.animalwelfareservicespringboot.domain.service.mapp
 import com.github.codepawfect.animalwelfareservicespringboot.domain.service.model.Dog;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Duration;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -18,13 +19,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
+import reactor.util.retry.Retry;
 
 /** Service class for managing dogs and their images. */
 @Slf4j
@@ -61,8 +65,17 @@ public class DogService {
                 dogImageEntities -> {
                   Dog dog = dogMapper.mapToModel(dogEntity);
                   dog.setImageUris(dogImageEntities.stream().map(DogImageEntity::getUri).toList());
-                  return dog;
-                });
+                  return dog;}
+            ).retryWhen(Retry.backoff(3, Duration.ofMillis(1000)))
+                .onErrorMap(throwable -> this.handleError(throwable, "Unable to retrieve dogs at this time: %s"));
+  }
+
+  private Throwable handleError(Throwable throwable, String message) {
+    log.error(message.formatted(throwable));
+
+    return new ResponseStatusException(
+            HttpStatus.SERVICE_UNAVAILABLE, message.formatted(throwable)
+    );
   }
 
   /**
@@ -72,7 +85,10 @@ public class DogService {
    * @return A Mono containing the Dog object with image URIs, or empty if not found.
    */
   public Mono<Dog> getDog(String id) {
-    return dogRepository.findById(UUID.fromString(id)).flatMap(findImagesAssociatedWithDogEntity());
+    return dogRepository.findById(UUID.fromString(id))
+            .flatMap(findImagesAssociatedWithDogEntity())
+            .retryWhen(Retry.backoff(3, Duration.ofMillis(1000)))
+            .onErrorMap(throwable -> this.handleError(throwable, "Unable to retrieve dog at this time: %s"));
   }
 
   /**
