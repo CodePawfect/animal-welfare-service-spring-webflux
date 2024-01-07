@@ -17,6 +17,8 @@ import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpStatus;
@@ -52,6 +54,7 @@ public class DogService {
    *
    * @return A Flux of Dog objects with image URIs.
    */
+  @Cacheable(value = "dogs")
   public Flux<Dog> getDogs() {
     return dogRepository.findAll().flatMap(findImagesAssociatedWithDogEntity());
   }
@@ -98,6 +101,7 @@ public class DogService {
    * @param filePartFlux A Flux of FilePart objects representing image files.
    * @return A Mono containing the added Dog object with image URIs.
    */
+  @CacheEvict("dogs")
   public Mono<Dog> addDog(Dog dog, Flux<FilePart> filePartFlux) {
     var dogEntity = dogMapper.mapToEntity(dog);
     dogEntity.setId(UUID.randomUUID());
@@ -150,6 +154,7 @@ public class DogService {
    * @return A Mono indicating the completion of the deletion operation.
    */
   @Transactional
+  @CacheEvict("dogs")
   public Mono<Void> deleteDog(String id) {
     return dogRepository
         .findById(UUID.fromString(id))
@@ -195,6 +200,7 @@ public class DogService {
    * @param dog The updated Dog object with new information.
    * @return A Mono containing the updated Dog object.
    */
+  @CacheEvict("dogs")
   public Mono<Dog> updateDogInformation(String dogId, Dog dog) {
     return dogRepository
         .findById(UUID.fromString(dogId))
